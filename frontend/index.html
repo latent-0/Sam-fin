@@ -1,0 +1,662 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#fafaf8">
+<title>Financial Advisor for Variable Income</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Poppins:wght@200;300;400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fafaf8; --surface:#ffffff; --line:#e7e7e2; --line2:#d9d9d2;
+  --ink:#1c2530; --mute:#677280; --faint:#98a1ab;
+  --accent:#2a6a62; --accent-ink:#ffffff; --accent-soft:#edf4f2;
+  --ok:#2e7b50; --ok-soft:#eaf5ee; --warn:#9a6200; --warn-soft:#fbf3e2; --bad:#b04332; --bad-soft:#fbeeeb;
+  --head:'Poppins',system-ui,sans-serif; --body:'Inter',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.6 var(--body)}
+h1,h2,h3,h4{font-family:var(--head);font-weight:300;margin:0;letter-spacing:-.005em}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+a{color:var(--accent)}
+
+/* top bar */
+.top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 28px;border-bottom:1px solid var(--line);background:var(--surface);position:sticky;top:0;z-index:20}
+.brand{font:300 19px var(--head);letter-spacing:-.01em;white-space:nowrap}
+.nav button{white-space:nowrap}
+@media(max-width:700px){.status span:last-child{display:none}.brand{font-size:16px}.nav button{padding:8px 9px;font-size:13px}}
+.brand b{font-weight:400;color:var(--accent)}
+.nav{display:flex;gap:2px}
+.nav button{background:none;border:0;padding:8px 14px;border-radius:8px;color:var(--mute);cursor:pointer;font-weight:500;font-size:14px}
+.nav button[aria-current=true]{color:var(--ink);background:var(--bg)}
+.nav button:hover{color:var(--ink)}
+.status{display:flex;align-items:center;gap:7px;color:var(--faint);font-size:12.5px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--faint)}
+.dot.ok{background:var(--ok)} .dot.bad{background:var(--bad)}
+
+/* layout */
+.page{max-width:1240px;margin:0 auto;padding:28px}
+.advice{display:grid;grid-template-columns:400px 1fr;gap:36px;align-items:start}
+@media(max-width:980px){.advice{grid-template-columns:1fr}.page{padding:18px}.top{padding:12px 18px}}
+.formcol{position:sticky;top:76px;max-height:calc(100vh - 92px);overflow:auto;padding-right:6px}
+@media(max-width:980px){.formcol{position:static;max-height:none;overflow:visible;padding:0}}
+.lede{font:200 30px/1.25 var(--head);margin:4px 0 6px}
+.sub{color:var(--mute);margin:0 0 22px;max-width:46ch}
+
+/* form */
+.examples{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 22px}
+.chip{border:1px solid var(--line2);background:var(--surface);border-radius:99px;padding:5px 12px;font-size:13px;color:var(--mute);cursor:pointer}
+.chip:hover{border-color:var(--accent);color:var(--ink)}
+.chip[aria-pressed=true]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.block{border-top:1px solid var(--line);padding:18px 0}
+.block h3{font-size:15px;font-weight:400;margin-bottom:2px}
+.hint{color:var(--mute);font-size:13px;margin:0 0 10px}
+label{display:block;font-size:13px;color:var(--mute);margin:10px 0 4px}
+.field{position:relative}
+input[type=number],input[type=text],select{width:100%;padding:9px 11px;border:1px solid var(--line2);border-radius:8px;background:var(--surface);transition:border-color .15s}
+input:hover,select:hover{border-color:var(--faint)}
+input:focus,select:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 3px var(--accent-soft)}
+.cur{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--faint);pointer-events:none}
+.field.money input{padding-left:26px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 10px}
+.months{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px;margin-top:6px}
+.month{position:relative}
+.month input{padding:8px 24px 8px 9px;font-size:14px}
+.month small{position:absolute;top:-8px;left:8px;background:var(--bg);padding:0 4px;font-size:10.5px;color:var(--faint)}
+.month .x{position:absolute;right:3px;top:50%;transform:translateY(-50%);border:0;background:none;color:var(--faint);cursor:pointer;font-size:15px;line-height:1;padding:4px}
+.month .x:hover{color:var(--bad)}
+.linkbtn{background:none;border:0;color:var(--accent);cursor:pointer;padding:6px 0;font-size:13.5px;font-weight:500}
+.spark{margin-top:12px}
+.facts{display:flex;gap:18px;flex-wrap:wrap;margin-top:8px;font-size:13px;color:var(--mute)}
+.facts b{display:block;font:300 18px var(--head);color:var(--ink)}
+.live{background:var(--accent-soft);border-radius:8px;padding:9px 12px;font-size:13.5px;margin-top:10px;color:#244f49}
+details.more>summary{cursor:pointer;color:var(--accent);font-weight:500;font-size:14px;padding:4px 0;list-style:none}
+details.more>summary::before{content:'+ ';}
+details.more[open]>summary::before{content:'\2212 ';}
+.cta{position:sticky;bottom:0;background:linear-gradient(to top,var(--bg) 70%,transparent);padding:16px 0 4px}
+.primary{width:100%;background:var(--accent);color:var(--accent-ink);border:0;border-radius:10px;padding:13px 16px;font:400 15px var(--head);cursor:pointer;transition:background .15s}
+.primary:hover{background:#235a53}
+.primary:disabled{opacity:.6;cursor:wait}
+.msg{font-size:13px;color:var(--mute);margin:8px 0 0;min-height:1.2em}
+.msg.err{color:var(--bad)}
+
+/* results */
+.empty{border:1px dashed var(--line2);border-radius:14px;padding:44px 32px;text-align:left;color:var(--mute)}
+.empty h2{font-size:24px;color:var(--ink);margin-bottom:8px}
+.empty ol{padding-left:18px;margin:14px 0 0}
+.verdict{border:1px solid var(--line);border-radius:14px;background:var(--surface);padding:24px 26px;margin-bottom:16px;border-left:4px solid var(--faint)}
+.verdict.likely{border-left-color:var(--ok)} .verdict.borderline{border-left-color:var(--warn)} .verdict.unlikely{border-left-color:var(--bad)}
+.verdict .tag{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);font-weight:500}
+.verdict h2{font:200 34px/1.2 var(--head);margin:4px 0 6px}
+.verdict p{margin:0;color:var(--mute);max-width:62ch}
+.verdict .small{font-size:12.5px;color:var(--faint);margin-top:10px}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:22px}
+@media(max-width:1180px){.cards{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px}
+.card h3{font-size:13px;font-weight:500;color:var(--mute);letter-spacing:.02em;margin-bottom:10px}
+.big{font:200 40px/1.1 var(--head);letter-spacing:-.02em}
+.big small{font-size:14px;font-weight:300;color:var(--mute);letter-spacing:0;margin-left:4px}
+.card p{margin:10px 0 0;font-size:14px;color:var(--mute)}
+.card p b{color:var(--ink);font-weight:500}
+.bar2{margin-top:14px}
+.bar2 div{display:grid;grid-template-columns:92px 1fr 70px;gap:8px;align-items:center;font-size:12.5px;color:var(--mute);margin:5px 0}
+.track{height:8px;background:#efefea;border-radius:99px;overflow:hidden}
+.track i{display:block;height:100%;border-radius:99px;background:var(--accent)}
+.track i.warn{background:var(--warn)} .track i.bad{background:var(--bad)}
+.steps{list-style:none;padding:0;margin:4px 0 0}
+.steps li{padding:9px 0;border-top:1px solid var(--line);font-size:14px}
+.steps li:first-child{border-top:0}
+.steps li b{font-weight:500}
+.note{background:var(--warn-soft);color:#6f4700;border-radius:8px;padding:9px 12px;font-size:13px;margin-top:12px}
+
+.sec{border-top:1px solid var(--line);padding:6px 0}
+.sec>summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;padding:14px 2px;font:300 19px var(--head)}
+.sec>summary::-webkit-details-marker{display:none}
+.sec>summary::after{content:'+';color:var(--faint);font:300 22px var(--head)}
+.sec[open]>summary::after{content:'\2212'}
+.sec .in{padding:2px 2px 22px}
+.reqs{display:grid;gap:0}
+.req{border-top:1px solid var(--line);padding:11px 0}
+.req:first-child{border-top:0}
+.req summary{cursor:pointer;list-style:none;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center}
+.req summary::-webkit-details-marker{display:none}
+.req .t{font-weight:500;font-size:14.5px}
+.req .v{color:var(--mute);font-size:13px}
+.pill{font-size:12px;padding:2px 10px;border-radius:99px;font-weight:500;white-space:nowrap}
+.pill.met{background:var(--ok-soft);color:var(--ok)} .pill.needs_improvement{background:var(--warn-soft);color:var(--warn)}
+.pill.not_met{background:var(--bad-soft);color:var(--bad)} .pill.unknown{background:#efefea;color:var(--mute)}
+.req .d{font-size:13.5px;color:var(--mute);padding:8px 0 0;max-width:70ch}
+.req .d b{color:var(--ink);font-weight:500}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:900px){.two{grid-template-columns:1fr}}
+.cap{font-size:12.5px;color:var(--mute);margin:6px 0 0}
+.hb{display:grid;grid-template-columns:150px 1fr 54px;gap:10px;align-items:center;font-size:13.5px;margin:7px 0}
+.hb .tr{position:relative;height:10px;background:#f1f1ec;border-radius:99px}
+.hb .tr i{position:absolute;top:0;height:100%;border-radius:99px}
+.hb .tr::after{content:'';position:absolute;left:50%;top:-3px;bottom:-3px;width:1px;background:var(--line2)}
+.hb span:last-child{text-align:right;color:var(--mute);font-variant-numeric:tabular-nums;font-size:12.5px}
+.stars{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.stars button{width:38px;height:38px;border-radius:8px;border:1px solid var(--line2);background:var(--surface);cursor:pointer;font-weight:500;color:var(--mute)}
+.stars button:hover{border-color:var(--accent);color:var(--accent)}
+.stars span{font-size:12.5px;color:var(--faint)}
+.foot{color:var(--faint);font-size:12.5px;margin-top:28px;max-width:72ch}
+
+.vp{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:22px}
+@media(max-width:1180px){.vp{grid-template-columns:1fr}}
+.vp div{border-top:2px solid var(--accent);padding-top:10px}
+.vp b{display:block;font:400 15px var(--head);color:var(--ink);margin-bottom:4px}
+.vp span{font-size:13.5px;color:var(--mute);display:block}
+
+/* live trace */
+.trace{border:1px solid var(--line);border-radius:14px;background:var(--surface);padding:6px 20px;margin-bottom:16px}
+.trace>summary{cursor:pointer;list-style:none;padding:12px 0;font:300 16px var(--head);display:flex;justify-content:space-between;gap:12px}
+.trace>summary::-webkit-details-marker{display:none}
+.trace>summary small{font:400 12.5px var(--body);color:var(--faint)}
+.trace.live{padding:16px 20px}
+.trace.live h3{font-size:17px;margin-bottom:6px}
+.tstep{display:grid;grid-template-columns:22px 1fr auto;gap:10px;padding:9px 0;border-top:1px solid var(--line);font-size:14px;align-items:start}
+.tstep:first-of-type{border-top:0}
+.tstep .ic{width:15px;height:15px;border-radius:50%;border:2px solid var(--line2);margin-top:4px;position:relative}
+.tstep.run .ic{border-color:var(--accent);border-top-color:transparent;animation:sp .8s linear infinite}
+.tstep.done .ic{background:var(--accent);border-color:var(--accent)}
+.tstep.done .ic::after{content:'';position:absolute;left:3.5px;top:.5px;width:3px;height:7px;border:solid #fff;border-width:0 1.5px 1.5px 0;transform:rotate(45deg)}
+.tstep .t b{font-weight:500}.tstep.pend{opacity:.45}
+.tstep .t span{display:block;color:var(--mute);font-size:13px}
+.tstep .ms{color:var(--faint);font-size:12px;font-variant-numeric:tabular-nums;padding-top:3px}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* actions, what-if, helper team */
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin:-4px 0 16px}
+.ghost{background:var(--surface);border:1px solid var(--line2);border-radius:8px;padding:7px 13px;font-size:13.5px;cursor:pointer;color:var(--ink)}
+.ghost:hover{border-color:var(--accent);color:var(--accent)}
+.whatif{margin-bottom:16px}
+.whatif input[type=range]{width:100%;accent-color:var(--accent);margin:10px 0 4px}
+.wi-read{display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px 18px;font-size:13.5px;color:var(--mute)}
+.wi-read b{font:300 20px var(--head);color:var(--ink)}
+.team{margin-bottom:22px}
+.mate{display:grid;grid-template-columns:150px 92px 1fr;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line);font-size:13.5px}
+.mate:first-of-type{border-top:0}
+.mate .nm{font-weight:500;font-size:14.5px}
+.mate .why{color:var(--mute)}
+.mate.off .nm{color:var(--faint)}
+@media(max-width:700px){.mate{grid-template-columns:1fr auto}.mate .why{grid-column:1/-1}}
+@media print{.top,.formcol,.cta,.whatif,.stars,.actions,.foot{display:none!important}.advice{display:block}.page{padding:0}details.sec>summary::after{display:none}}
+
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tw table{min-width:520px}
+
+/* ---------- mobile ---------- */
+@media(max-width:700px){
+  body{font-size:15px}
+  .top{flex-wrap:wrap;gap:4px 12px;padding:10px 14px 0}
+  .brand{order:1}
+  .status{order:2;margin-left:auto}
+  .nav{order:3;width:100%;overflow-x:auto;scrollbar-width:none;margin:0 -14px;padding:0 14px 8px;gap:2px}
+  .nav::-webkit-scrollbar{display:none}
+  .nav button{padding:9px 13px;font-size:14px;flex:0 0 auto;min-height:40px}
+  .page{padding:16px 14px 110px}
+  .lede{font-size:26px}
+  .sub{font-size:14.5px;margin-bottom:16px}
+  .chip{padding:9px 14px;font-size:13.5px}
+  input[type=number],input[type=text],select{font-size:16px;padding:11px 12px;min-height:46px}
+  .field.money input{padding-left:28px}
+  .grid2{grid-template-columns:1fr 1fr;gap:0 10px}
+  .grid3{grid-template-columns:1fr 1fr;gap:0 10px}
+  .grid3>div:first-child:nth-last-child(3){grid-column:1/-1}
+  .months{grid-template-columns:repeat(auto-fill,minmax(96px,1fr))}
+  .month input{font-size:16px}
+  .month .x{padding:10px 8px}
+  .cta{position:fixed;left:0;right:0;bottom:0;z-index:30;padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:var(--surface);border-top:1px solid var(--line)}
+  .cta .msg{margin:4px 0 0}
+  .primary{padding:14px 16px;font-size:16px;min-height:50px}
+  .empty{padding:24px 18px}
+  .empty h2{font-size:21px}
+  .verdict{padding:18px 18px}
+  .verdict h2{font-size:26px}
+  .card{padding:16px}
+  .big{font-size:34px}
+  .bar2 div{grid-template-columns:78px 1fr 64px}
+  .hb{grid-template-columns:104px 1fr 44px;gap:8px;font-size:13px}
+  .sec>summary{font-size:17px;padding:16px 2px}
+  .req summary{grid-template-columns:1fr;gap:6px}
+  .req .pill{justify-self:start}
+  .actions .ghost{flex:1 1 auto;min-height:44px}
+  .stars button{width:46px;height:46px}
+  .stars{gap:8px}
+  .wi-read{flex-direction:column}
+  .trace{padding:2px 14px}
+  .tstep{grid-template-columns:20px 1fr;}
+  .tstep .ms{grid-column:2;padding:0}
+  .prose h2{font-size:26px}
+  .kpi b{font-size:26px}
+  details.more>summary{padding:10px 0;min-height:44px}
+  .foot{font-size:12px}
+}
+@media(max-width:420px){.nav button{padding:9px 9px;font-size:13.5px}}
+@media(max-width:380px){.grid2,.grid3{grid-template-columns:1fr}.lede{font-size:23px}}
+
+/* other pages */
+.prose{max-width:760px}
+.prose h2{font:200 32px/1.2 var(--head);margin-bottom:12px}
+.prose h3{font-size:18px;margin:26px 0 6px}
+.prose p,.prose li{color:#3b4653}
+.svcgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin:14px 0}
+.svc{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:14px}
+.svc b{font-weight:500;display:flex;gap:8px;align-items:center}
+.svc span{color:var(--mute);font-size:13px}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line)}
+th{color:var(--mute);font-weight:500;font-size:12.5px}
+td.n{font-variant-numeric:tabular-nums}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:18px 0 26px}
+.kpi{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:16px}
+.kpi small{display:block;color:var(--mute);font-size:12.5px}
+.kpi b{font:200 30px var(--head);display:block;margin:2px 0}
+.kpi i{font-style:normal;font-size:12.5px;color:var(--faint)}
+svg text{fill:var(--mute);font:11px var(--body)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">Financial <b>advisor</b></div>
+  <nav class="nav" id="nav">
+    <button data-page="advice" aria-current="true">Advice</button>
+    <button data-page="explain">Explain</button>
+    <button data-page="how">How it works</button>
+    <button data-page="eval">Evidence</button>
+  </nav>
+  <div class="status" id="status" title="Backend services"><span class="dot"></span><span>checking</span></div>
+</header>
+
+<main class="page">
+<!-- ================= ADVICE ================= -->
+<section id="p-advice" class="advice">
+  <div class="formcol">
+    <h1 class="lede">Plan around the months you actually have.</h1>
+    <p class="sub">Enter what you earned recently, what you spend, and any loan you are considering. You will get a plain answer first and the working behind it after.</p>
+
+    <div class="examples" id="examples" role="group" aria-label="Start from an example"></div>
+
+    <div class="block">
+      <h3>Monthly income</h3>
+      <p class="hint">One value per month, oldest first. Real months beat averages: add every one you have.</p>
+      <div class="months" id="months"></div>
+      <button class="linkbtn" id="addMonth" type="button">+ Add a month</button>
+      <div class="spark" id="spark"></div>
+      <div class="facts" id="facts"></div>
+    </div>
+
+    <div class="block">
+      <h3>Spending</h3>
+      <p class="hint">Include everything you pay each month, loan payments too.</p>
+      <div class="grid2">
+        <div><label for="monthly_expenses">Total monthly spending</label>
+          <div class="field money"><span class="cur" data-cur></span><input id="monthly_expenses" type="number" min="0" inputmode="decimal"></div></div>
+        <div><label for="existing_emi">Of which loan payments</label>
+          <div class="field money"><span class="cur" data-cur></span><input id="existing_emi" type="number" min="0" inputmode="decimal"></div></div>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>The loan you are considering</h3>
+      <p class="hint">Leave the amount at 0 if you only want a plan.</p>
+      <div class="grid3">
+        <div><label for="loan_amount">Amount</label><div class="field money"><span class="cur" data-cur></span><input id="loan_amount" type="number" min="0" inputmode="decimal"></div></div>
+        <div><label for="loan_rate">Interest % a year</label><input id="loan_rate" type="number" step="0.1" min="0"></div>
+        <div><label for="loan_months">Months</label><input id="loan_months" type="number" min="1"></div>
+      </div>
+      <div class="live" id="emiLive" hidden></div>
+    </div>
+
+    <div class="block">
+      <h3>Savings and debt</h3>
+      <div class="grid2">
+        <div><label for="emergency_fund">Emergency fund</label><div class="field money"><span class="cur" data-cur></span><input id="emergency_fund" type="number" min="0"></div></div>
+        <div><label for="liquid_savings">Other cash savings</label><div class="field money"><span class="cur" data-cur></span><input id="liquid_savings" type="number" min="0"></div></div>
+        <div><label for="investments">Investments</label><div class="field money"><span class="cur" data-cur></span><input id="investments" type="number" min="0"></div></div>
+        <div><label for="debt_balance">Other debt owed</label><div class="field money"><span class="cur" data-cur></span><input id="debt_balance" type="number" min="0"></div></div>
+        <div><label for="debt_rate">Rate on that debt, % a year</label><input id="debt_rate" type="number" step="0.1" min="0"></div>
+        <div><label for="risk_pick">Comfort with investment swings</label>
+          <select id="risk_pick"><option value="0.25">Low</option><option value="0.5">Medium</option><option value="0.75">High</option></select></div>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>A goal, if you have one</h3>
+      <div class="grid3">
+        <div><label for="goal_amount">Target</label><div class="field money"><span class="cur" data-cur></span><input id="goal_amount" type="number" min="0"></div></div>
+        <div><label for="goal_saved">Saved so far</label><div class="field money"><span class="cur" data-cur></span><input id="goal_saved" type="number" min="0"></div></div>
+        <div><label for="goal_months">Months left</label><input id="goal_months" type="number" min="1"></div>
+      </div>
+    </div>
+
+    <details class="more block">
+      <summary>Credit history and personal details</summary>
+      <div class="grid3">
+        <div><label for="age">Age</label><input id="age" type="number"></div>
+        <div><label for="dependents">Dependents</label><input id="dependents" type="number" min="0"></div>
+        <div><label for="open_lines">Open credit accounts</label><input id="open_lines" type="number" min="0"></div>
+        <div><label for="utilization">Card limit used, %</label><input id="util_pct" type="number" min="0" max="200"></div>
+        <div><label for="late_30">Late 30 to 59 days</label><input id="late_30" type="number" min="0"></div>
+        <div><label for="late_60">Late 60 to 89 days</label><input id="late_60" type="number" min="0"></div>
+        <div><label for="late_90">Late 90+ days</label><input id="late_90" type="number" min="0"></div>
+        <div><label for="missed_payments">Missed loan payments</label><input id="missed_payments" type="number" min="0" placeholder="not sure"></div>
+        <div><label for="cur_pick">Currency</label><select id="cur_pick"><option>₹</option><option>$</option><option>€</option><option>£</option></select></div>
+      </div>
+    </details>
+
+    <div class="cta">
+      <button class="primary" id="go" type="button">Get my advice</button>
+      <p class="msg" id="msg" role="status"></p>
+    </div>
+  </div>
+
+  <div id="results" aria-live="polite">
+    <div class="empty">
+      <h2>Know what you can safely borrow, and what to do next.</h2>
+      <p>Most calculators assume a steady salary. This one is built for income that moves, and it shows its working.</p>
+      <div class="vp">
+        <div><b>A limit sized to your worst months</b><span>We simulate thousands of possible years from your own income history and find the largest instalment that rarely leaves you short.</span></div>
+        <div><b>A path from "no" to "yes"</b><span>If the loan looks too heavy, you get the cheapest changes that would fix it, and roughly how many months they take.</span></div>
+        <div><b>A plan with reasons</b><span>A team of six helpers (budget, debt, emergency fund, goal, income protection, investing) is picked by a learned selector, and each one's contribution is measured.</span></div>
+      </div>
+      <p class="hint" style="margin-top:18px">Pick an example on the left to see it work, or enter your own numbers. Nothing you enter leaves this machine.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= EXPLAIN ================= -->
+<section id="p-explain" class="prose" hidden style="max-width:980px"><div id="explainbody"></div></section>
+
+<!-- ================= HOW ================= -->
+<section id="p-how" class="prose" hidden>
+  <h2>How it works</h2>
+  <p>This is a preparation tool. It does not approve loans and it is not financial advice from a licensed adviser. It checks the figures you give it against illustrative criteria and simulates your next twelve months.</p>
+  <h3>Three questions, three methods</h3>
+  <ol>
+    <li><b>How big an instalment is safe?</b> Your income history is turned into thousands of possible next years. The safe instalment is the largest one for which cash runs out in only a small share of them. With fewer than 12 months of records we use a stricter margin, because short histories fool simple models.</li>
+    <li><b>What would get me approved?</b> A credit model trained on three public datasets scores the loan, then searches for the cheapest changes, such as a smaller instalment or a bigger cash buffer, that would move the score into the likely range.</li>
+    <li><b>What should I do this month?</b> A learned selector chooses which of six helpers (budgeting, debt, emergency fund, goal, income protection, investing) should act. Each helper's contribution is measured by simulating every combination.</li>
+  </ol>
+  <h3>Services behind the page</h3>
+  <div class="svcgrid" id="svcgrid"></div>
+  <h3>What to keep in mind</h3>
+  <ul>
+    <li>Income, spending and credit history are the only inputs. Nothing is looked up about you.</li>
+    <li>The household simulations and the loan labels use assumed behaviour. Treat percentages as guidance, not promises.</li>
+    <li>Income that alternates between long good and bad spells is the hardest case for the safe-instalment rule. If that is you, lean on the buffer advice.</li>
+  </ul>
+</section>
+
+<!-- ================= EVIDENCE ================= -->
+<section id="p-eval" class="prose" hidden style="max-width:980px">
+  <h2>The evidence</h2>
+  <p>These numbers come from the experiments described in the accompanying paper. They are simulated or based on public datasets, and the limits are stated next to each result.</p>
+  <div id="evalbody"><p class="hint">Loading.</p></div>
+</section>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let CUR='₹', presets={}, R=null, months=[], form={};
+const num=id=>{const v=parseFloat($(id).value);return isNaN(v)?0:v};
+const fmt=n=>CUR+Math.round(n).toLocaleString();
+const pct=(n,d=0)=>(n*100).toFixed(d)+'%';
+const AG={budget:'Budgeting',debt:'Debt paydown',emergency:'Emergency fund',goal:'Goal saving',risk:'Income protection',investment:'Investing'};
+
+/* ---------- navigation ---------- */
+function showPage(p){
+  document.querySelectorAll('#nav button').forEach(x=>x.setAttribute('aria-current',x.dataset.page===p));
+  ['advice','explain','how','eval'].forEach(q=>$('p-'+q).hidden=q!==p);
+  if(p==='eval')loadEval(); if(p==='how')loadSvc(); if(p==='explain')$('explainbody').innerHTML=explainHTML();
+  window.scrollTo(0,0);
+}
+document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>showPage(b.dataset.page));
+document.addEventListener('click',e=>{const a=e.target.closest('[data-go]');if(a){e.preventDefault();showPage(a.dataset.go)}});
+
+/* ---------- income editor ---------- */
+function renderMonths(){
+  $('months').innerHTML=months.map((v,i)=>`<div class="month"><small>Month ${i+1}</small><input type="number" min="0" value="${v??''}" data-i="${i}" aria-label="Income, month ${i+1}"><button class="x" type="button" data-x="${i}" aria-label="Remove month ${i+1}" ${months.length<=2?'hidden':''}>&times;</button></div>`).join('');
+  $('months').querySelectorAll('input').forEach(inp=>inp.oninput=()=>{months[+inp.dataset.i]=inp.value===''?null:+inp.value;drawIncome()});
+  $('months').querySelectorAll('.x').forEach(b=>b.onclick=()=>{months.splice(+b.dataset.x,1);renderMonths();drawIncome()});
+  drawIncome();
+}
+$('addMonth').onclick=()=>{months.push(months.length?months[months.length-1]:0);renderMonths();const ins=$('months').querySelectorAll('input');ins[ins.length-1].focus();ins[ins.length-1].select()};
+function validMonths(){return months.filter(v=>v!=null&&!isNaN(v)&&v>=0)}
+function drawIncome(){
+  const v=validMonths(); if(v.length<2){$('spark').innerHTML='';$('facts').innerHTML='<span>Add at least two months.</span>';return}
+  const mean=v.reduce((a,b)=>a+b,0)/v.length, sd=Math.sqrt(v.reduce((a,b)=>a+(b-mean)**2,0)/(v.length-1));
+  const w=600,h=64,mx=Math.max(...v)*1.1||1,bw=w/v.length;
+  $('spark').innerHTML=`<svg viewBox="0 0 ${w} ${h}" width="100%" role="img" aria-label="Income by month">`+v.map((x,i)=>`<rect x="${i*bw+2}" y="${h-(h-4)*x/mx}" width="${Math.max(bw-4,2)}" height="${(h-4)*x/mx}" rx="2" fill="${x<mean*.75?'#c9a15a':'#9fc3bd'}"/>`).join('')+`<line x1="0" x2="${w}" y1="${h-(h-4)*mean/mx}" y2="${h-(h-4)*mean/mx}" stroke="#2a6a62" stroke-dasharray="3 3" stroke-width="1"/></svg>`;
+  $('facts').innerHTML=`<div><b>${fmt(mean)}</b>average</div><div><b>${fmt(Math.min(...v))}</b>lowest month</div><div><b>${(sd/mean*100).toFixed(0)}%</b>month to month swing</div>`;
+}
+
+/* ---------- loan preview ---------- */
+function emiOf(P,r,m){r=r/1200;if(m<=0||P<=0)return 0;return r===0?P/m:P*r*Math.pow(1+r,m)/(Math.pow(1+r,m)-1)}
+function liveEmi(){const e=emiOf(num('loan_amount'),num('loan_rate'),num('loan_months')),b=$('emiLive');
+  if(e>0){b.hidden=false;b.textContent=`That loan costs about ${fmt(e)} a month, ${fmt(e*num('loan_months'))} in total.`}else b.hidden=true}
+['loan_amount','loan_rate','loan_months'].forEach(id=>$(id).addEventListener('input',liveEmi));
+document.addEventListener('input',e=>{if(e.target.id==='cur_pick'){CUR=e.target.value;document.querySelectorAll('[data-cur]').forEach(s=>s.textContent=CUR);drawIncome();liveEmi()}});
+document.querySelectorAll('[data-cur]').forEach(s=>s.textContent=CUR);
+
+/* ---------- presets ---------- */
+function fill(p){
+  months=p.income_history.slice(); renderMonths();
+  for(const k of ['monthly_expenses','existing_emi','liquid_savings','emergency_fund','investments','debt_balance','debt_rate','goal_amount','goal_saved','goal_months','age','dependents','open_lines','late_30','late_60','late_90'])$(k).value=p[k]??0;
+  $('loan_amount').value=p.loan.amount;$('loan_rate').value=p.loan.annual_rate;$('loan_months').value=p.loan.months;
+  $('missed_payments').value=p.missed_payments??'';$('util_pct').value=Math.round((p.utilization??0.3)*100);
+  const r=p.risk_tolerance??.5;$('risk_pick').value=r<.4?'0.25':r<.65?'0.5':'0.75'; liveEmi();
+}
+function collect(){
+  const v=validMonths(); if(v.length<2)throw new Error('Please enter at least two months of income.');
+  if(num('monthly_expenses')<=0)throw new Error('Please enter your monthly spending.');
+  const o={income_history:v,loan:{amount:num('loan_amount'),annual_rate:num('loan_rate'),months:Math.max(1,num('loan_months'))},
+    risk_tolerance:+$('risk_pick').value,utilization:num('util_pct')/100};
+  for(const k of ['monthly_expenses','existing_emi','liquid_savings','emergency_fund','investments','debt_balance','debt_rate','goal_amount','goal_saved','goal_months','age','dependents','open_lines','late_30','late_60','late_90'])o[k]=num(k);
+  if($('missed_payments').value!=='')o.missed_payments=num('missed_payments');
+  return o;
+}
+
+/* ---------- charts ---------- */
+const CW=()=>window.innerWidth<700?340:560;
+function line(series,{w=CW(),h=window.innerWidth<700?190:200,fan=null,hl=[],yf=fmt,xl=null}={}){
+  const all=series.flatMap(s=>s.y).concat(hl.map(l=>l.y)).concat(fan?fan.flatMap(f=>[...f.lo,...f.hi]):[]);
+  let mn=Math.min(...all),mx=Math.max(...all);if(mn===mx)mx=mn+1;const pad=(mx-mn)*.08;mn-=pad;mx+=pad;
+  const n=Math.max(...series.map(s=>s.y.length)),L=52,B=22,T=8,X=i=>L+i*(w-L-8)/Math.max(n-1,1),Y=v=>T+(h-T-B)*(1-(v-mn)/(mx-mn));
+  let g='';for(let i=0;i<=3;i++){const v=mn+(mx-mn)*i/3;g+=`<line x1="${L}" x2="${w-8}" y1="${Y(v)}" y2="${Y(v)}" stroke="#ecece7"/><text x="${L-6}" y="${Y(v)+4}" text-anchor="end">${yf(v)}</text>`}
+  if(fan)for(const f of fan){g+=`<path d="${f.lo.map((v,i)=>`${i?'L':'M'}${X(i)},${Y(v)}`).join('')}${f.hi.map((v,i)=>`L${X(f.hi.length-1-i)},${Y(f.hi[f.hi.length-1-i])}`).join('')}Z" fill="${f.c}" opacity="${f.o}"/>`}
+  for(const l of hl)g+=`<line x1="${L}" x2="${w-8}" y1="${Y(l.y)}" y2="${Y(l.y)}" stroke="${l.c}" stroke-dasharray="4 4"/><text x="${w-10}" y="${Y(l.y)-5}" text-anchor="end" style="fill:${l.c}">${l.t}</text>`;
+  for(const s of series)g+=`<path d="${s.y.map((v,i)=>`${i?'L':'M'}${X(i)},${Y(v)}`).join('')}" fill="none" stroke="${s.c}" stroke-width="2" ${s.d?'stroke-dasharray="5 4"':''}/>`;
+  if(xl)xl.forEach((t,i)=>{g+=`<text x="${X(i)}" y="${h-6}" text-anchor="middle">${t}</text>`});
+  return `<svg viewBox="0 0 ${w} ${h}" width="100%" role="img">${g}</svg>`}
+function hbars(rows,f=v=>v.toFixed(2)){const mx=Math.max(...rows.map(r=>Math.abs(r.v)),1e-9);
+  return rows.map(r=>{const wd=Math.abs(r.v)/mx*50,pos=r.v>=0;return `<div class="hb"><span>${esc(r.l)}</span><span class="tr"><i style="${pos?'left:50%':'right:50%'};width:${wd}%;background:${r.c||(pos?'#2a6a62':'#b04332')}"></i></span><span>${f(r.v)}</span></div>`}).join('')}
+
+/* ---------- results ---------- */
+const VERDICT={likely:['Likely to qualify','On these figures the loan looks manageable, even in a slow month.'],
+  borderline:['Close, but not safe yet','The loan is within reach, though a slow month could squeeze you. A few changes would help.'],
+  unlikely:['Too heavy as asked','As asked, this instalment is too heavy for how your income moves. Smaller changes can still get you there.']};
+function render(noScroll){
+  const openState=[...$('results').querySelectorAll('details.sec')].map(d=>d.open);
+  const c=R.credit,i=R.income,n=i.stability.n,asked=R.new_emi,safe=i.safe_new_emi,v=VERDICT[c.decision];
+  const hasLoan=asked>0,over=hasLoan&&asked>safe;
+  const mx=Math.max(asked,safe,1)*1.1;
+  const ruin=i.ruin_probability;
+  let A=`<div class="card"><h3>Comfortable monthly instalment</h3><div class="big">${fmt(safe)}<small>a month</small></div>`;
+  if(hasLoan){A+=`<div class="bar2"><div><span>You asked</span><span class="track"><i class="${over?'bad':''}" style="width:${asked/mx*100}%"></i></span><span>${fmt(asked)}</span></div><div><span>Comfortable</span><span class="track"><i style="width:${safe/mx*100}%"></i></span><span>${fmt(safe)}</span></div></div>
+    <p>${over?`At ${fmt(asked)} we estimate a <b>${pct(ruin)}</b> chance of running out of cash at some point in the next 12 months.`:`Your ask is inside the limit. Estimated chance of running out of cash in the next 12 months: <b>${pct(ruin)}</b>.`}</p>`}
+  else A+=`<p>This is the most extra instalment your income could carry with about a ${pct(i.alpha_effective||.1)} chance of running short within a year.</p>`;
+  if(n<12)A+=`<div class="note">You entered ${n} month${n>1?'s':''} of income. With under 12 months we use a stricter margin, so this limit is deliberately cautious.</div>`;
+  A+='</div>';
+
+  let B='<div class="card"><h3>What would change the answer</h3>';
+  if(c.counterfactuals&&c.counterfactuals.length){
+    const ch=c.counterfactuals[0].changes,mean=R.mean_income,L=[];
+    if(ch.emi_ratio)L.push(`Bring the instalment down to about <b>${fmt(ch.emi_ratio.to*mean)}</b>`);
+    if(ch.buffer_months)L.push(`Hold about <b>${ch.buffer_months.to.toFixed(1)} months</b> of spending in savings (now ${ch.buffer_months.frm.toFixed(1)})`);
+    if(ch.utilization)L.push(`Use about <b>${Math.round(ch.utilization.to*100)}%</b> of your card limits (now ${Math.round(ch.utilization.frm*100)}%)`);
+    if(ch.history_months)L.push(`Keep recording income for <b>${Math.round(ch.history_months.to-ch.history_months.frm)}</b> more months`);
+    B+=`<div class="big" style="font-size:26px">${L.length} change${L.length>1?'s':''}</div><ul class="steps">${L.map(x=>`<li>${x}</li>`).join('')}</ul>`;
+    const m=c.history_path.months_to_target;
+    if(n<12&&ch.emi_ratio&&ch.emi_ratio.to*mean>safe)B+=`<p>These changes aim at the credit score. Your comfortable limit may stay lower until you have 12 months of records.</p>`;
+    B+=`<p>${m===null?'Saving alone would not get you under the line within two years at this loan size.':`If you also save steadily, expect roughly <b>${m} months</b> to get there.`}</p>`;
+  }else if(c.decision==='likely')B+=`<div class="big" style="font-size:26px">Nothing needed</div><p>You are already under the approval line on these figures. Keep your buffer as it is.</p>`;
+  else B+=`<p>No small combination of changes gets this application to the line. A smaller loan or a longer record would be the place to start.</p>`;
+  B+='</div>';
+
+  const acts=R.plan.actions.slice(0,3);
+  let C=`<div class="card"><h3>What to do this month</h3>${acts.length?`<ul class="steps">${acts.map(a=>`<li><b>${AG[a.agent]}.</b> ${esc(a.text)}</li>`).join('')}</ul>`:'<p>No extra allocation this month. Keep spending as planned.</p>'}<p>Chosen from ${R.orchestrator.agents.length} helper${R.orchestrator.agents.length>1?'s':''}: ${R.orchestrator.agents.map(a=>AG[a]).join(', ')}.</p></div>`;
+
+  const hist=validMonths(),f=i.fan,pj=R.plan.projection,x=R.explain;
+  const total=num('monthly_expenses')+asked;
+  const req=i.requirements.map(r=>`<details class="req"><summary><span><span class="t">${esc(r.title)}</span><br><span class="v">${esc(r.value)}</span></span><span class="pill ${r.status}">${({met:'Fine',needs_improvement:'Could be better',not_met:'Not met',unknown:"Can't tell"})[r.status]}</span></summary>
+    <div class="d">${esc(r.detail)}<br><b>Benchmark:</b> ${esc(r.comparison)}.${r.action?`<br><b>What you can do:</b> ${esc(r.action)}`:''}<br><span class="v">${esc(r.source)}</span></div></details>`).join('');
+  const shap=Object.entries(x.shapley).map(([k,v])=>({l:AG[k],v})).sort((a,b)=>b.v-a.v);
+  const fac=c.factors.map(f=>({l:f.label,v:f.effect,c:f.effect>0?'#b04332':'#2a6a62'}));
+  const inter=(x.interactions||[]).slice(0,2).map(t=>`${AG[t.a]} and ${AG[t.b]} ${t.value>0?'work well together':'overlap, so doing both adds less than it seems'}.`).join(' ');
+
+  $('results').innerHTML=`
+  ${traceBlock()}
+  <div class="verdict ${c.decision}"><div class="tag">Loan readiness</div><h2>${v[0]}</h2><p>${v[1]}</p>
+    <p class="small">Estimated default risk ${pct(c.pd,1)}. ${c.certainty==='confident'?'The model is confident in this band.':'The model is not sure whether this lands above or below the line.'} This is a preparation check, not a lender's decision.</p></div>
+  ${actionsHTML()}
+  <div class="cards">${A}${B}${C}</div>
+  ${whatifHTML()}${teamHTML()}
+
+  <details class="sec" open><summary>Requirement checklist</summary><div class="in"><div class="reqs">${req}</div></div></details>
+  <details class="sec"><summary>Your income, and the next twelve months</summary><div class="in"><div class="two">
+    <div>${line([{y:hist,c:'#2a6a62'}],{hl:[{y:total,c:'#b04332',t:'spending + new loan'}],xl:hist.map((_,k)=>'M'+(k+1))})}<p class="cap">Recorded income against what you would spend each month.</p></div>
+    <div>${line([{y:f['0.5'],c:'#2a6a62'}],{fan:[{lo:f['0.05'],hi:f['0.95'],c:'#2a6a62',o:.12},{lo:f['0.25'],hi:f['0.75'],c:'#2a6a62',o:.22}],hl:[{y:total,c:'#b04332',t:'spending + new loan'}],xl:f['0.5'].map((_,k)=>'M'+(k+1))})}<p class="cap">Simulated range for the next year. Shaded: middle half and nine in ten outcomes.</p></div></div>
+    <p class="cap">In a bad month (about one in twenty) income could fall to around <b>${fmt(i.income_at_risk.iar)}</b>. Stability score ${i.stability.isi} of 100, ${i.stability.band}.</p></div></details>
+  <details class="sec"><summary>Your plan over twelve months</summary><div class="in">
+    ${line([{y:pj.with_plan.map(r=>r.net_worth),c:'#2a6a62'},{y:pj.without_plan.map(r=>r.net_worth),c:'#c9a15a',d:1}],{xl:pj.with_plan.map(r=>'M'+r.month)})}
+    <p class="cap"><span style="color:#2a6a62">Solid</span>: net worth following the plan. <span style="color:#a98340">Dashed</span>: without it. Expected difference after a year: <b>${fmt(R.plan.net_worth_gain_12m)}</b>. Months with a cash shortfall: ${pct(R.plan.risk.shortfall_month_prob_with_plan,1)} with the plan, ${pct(R.plan.risk.shortfall_month_prob_without_plan,1)} without.</p>
+    ${R.plan.conflicts.length?`<h4 style="margin:16px 0 6px;font-size:15px">Where goals competed</h4>${R.plan.conflicts.map(k=>`<p class="cap" style="margin:6px 0"><b style="color:var(--ink);font-weight:500">${k.between.map(a=>AG[a]).join(' vs ')}.</b> ${esc(k.resolution)} ${esc(k.reason)}</p>`).join('')}`:''}</div></details>
+  <details class="sec"><summary>Why this advice</summary><div class="in"><div class="two">
+    <div><h4 style="font-size:15px;margin-bottom:4px">What each helper adds</h4><p class="cap" style="margin-bottom:8px">Measured by simulating every combination of helpers on your figures. Longer to the right means more value; to the left means it costs more than it helps.</p>${hbars(shap)}<p class="cap">${inter}</p></div>
+    <div><h4 style="font-size:15px;margin-bottom:4px">What moves your loan score</h4><p class="cap" style="margin-bottom:8px">Right (red) raises your risk, left (green) lowers it.</p>${hbars(fac,v=>(v>0?'+':'')+v.toFixed(2))}</div></div></div></details>
+  <details class="sec"><summary>Was this useful?</summary><div class="in"><div class="stars" role="group" aria-label="Rate this advice"><span>Not useful</span>${[1,2,3,4,5].map(k=>`<button type="button" data-r="${k}" aria-label="${k} out of 5">${k}</button>`).join('')}<span>Very useful</span></div><p class="cap" id="fb">Your rating nudges which helpers are chosen for similar households.</p></div></details>
+  <p class="foot">Illustrative criteria, not lender policy. Figures are simulated estimates from the information you entered and will differ from real outcomes.</p>`;
+  $('results').querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>rate(+b.dataset.r));
+  $('results').querySelectorAll('details.sec').forEach((d,k)=>{if(openState[k]!==undefined)d.open=openState[k]});
+  wireResults();
+  if(!noScroll)document.querySelector('.verdict').scrollIntoView({behavior:'smooth',block:'start'});
+}
+const STEPS=[['income','Income analysis'],['credit','Loan readiness'],['feedback','Past feedback'],['rl','Choosing helpers'],['agents','Building the plan'],['xai','Explaining the choice']];
+const G1=['income','credit','feedback'];
+function traceRows(done){const g1=G1.every(k=>done[k]);
+  return STEPS.map(([id,l])=>{const d=done[id];const st=d?'done':(G1.includes(id)||(id==='rl'&&g1)||((id==='agents'||id==='xai')&&done.rl))?'run':'pend';
+    return `<div class="tstep ${st}"><span class="ic"></span><div class="t"><b>${l}</b><span>${d?esc(d.detail):(st==='run'?'Working...':'Waiting')}</span></div><span class="ms">${d?d.ms+' ms':''}</span></div>`}).join('')}
+function traceBlock(){if(!R.trace)return '';const ms=R.total_ms?(R.total_ms/1000).toFixed(2):'';
+  return `<details class="trace"><summary><span>How this was worked out</span><small>6 steps${ms?' in '+ms+' s':''}</small></summary><div>${traceRows(R.trace)}</div></details>`}
+async function runAdvice(body,live){
+  const done={};
+  if(live){$('results').innerHTML='<div class="trace live"><h3>Working it out</h3><div id="tr">'+traceRows({})+'</div></div>';if(window.innerWidth<=980)$('results').scrollIntoView({behavior:'smooth',block:'start'})}
+  const r=await fetch('/api/advise/stream',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});
+  if(!r.ok||!r.body)throw new Error('Could not reach the advice service.');
+  const rd=r.body.getReader(),dec=new TextDecoder();let buf='',result=null;
+  for(;;){const {value,done:fin}=await rd.read();if(fin)break;buf+=dec.decode(value,{stream:true});
+    let i;while((i=buf.indexOf('\n\n'))>=0){const blk=buf.slice(0,i);buf=buf.slice(i+2);
+      const ev=(blk.match(/^event: (.*)$/m)||[])[1],raw=(blk.match(/^data: (.*)$/m)||[])[1],data=raw?JSON.parse(raw):null;
+      if(ev==='step'){done[data.id]=data;const t=$('tr');if(t)t.innerHTML=traceRows(done)}
+      else if(ev==='done')result=data;else if(ev==='error')throw new Error(data.detail||'Something went wrong.')}}
+  if(!result)throw new Error('The analysis did not finish.');
+  result.trace=done;return result}
+function teamHTML(){const sh=R.explain.shapley,on=R.orchestrator.agents;
+  const rows=Object.keys(AG).map(k=>{const v=sh[k],c=on.includes(k);
+    const why=c?(v>0.05?`Adds about ${v.toFixed(2)} of value on your figures.`:`Part of the best combination; on its own it adds little (${v.toFixed(2)}).`)
+      :(v<-0.01?`Alone it would cost more than it returns (${v.toFixed(2)}).`:`The chosen helpers already cover most of what it would add (${v.toFixed(2)}).`);
+    return `<div class="mate ${c?'':'off'}"><span class="nm">${AG[k]}</span><span class="pill ${c?'met':'unknown'}">${c?'Chosen':'Skipped'}</span><span class="why">${why}</span></div>`}).join('');
+  return `<div class="card team"><h3>Your helper team</h3>${rows}<p class="cap">Picked by a learned selector from 63 possible combinations. <a href="#" data-go="explain">See the full explanation</a></p></div>`}
+function actionsHTML(){return `<div class="actions"><button class="ghost" type="button" id="copySum">Copy summary</button><button class="ghost" type="button" id="printPage">Print or save as PDF</button><button class="ghost" type="button" data-go="explain">Why this advice</button></div>`}
+function whatifHTML(){const amt=num('loan_amount');if(amt<=0)return '';const max=Math.max(amt*2,100000),step=Math.max(500,Math.round(max/200/500)*500);
+  return `<div class="card whatif"><h3>Try a different loan amount</h3><input type="range" id="wi" min="0" max="${max}" step="${step}" value="${amt}" aria-label="Loan amount"><div class="wi-read"><span>Loan <b id="wiAmt">${fmt(amt)}</b></span><span>Monthly instalment <b id="wiEmi">${fmt(R.new_emi)}</b></span><span>Comfortable limit <b>${fmt(R.income.safe_new_emi)}</b></span></div><p class="cap" id="wiMsg">Drag, then release to re-run the full analysis.</p></div>`}
+function wireResults(){
+  const w=$('wi');if(w){w.oninput=()=>{$('wiAmt').textContent=fmt(+w.value);$('wiEmi').textContent=fmt(emiOf(+w.value,num('loan_rate'),num('loan_months')))};
+    w.onchange=async()=>{$('wiMsg').textContent='Re-running...';$('loan_amount').value=w.value;liveEmi();try{const y=window.scrollY;R=await runAdvice(collect(),false);render(true);window.scrollTo(0,y)}catch(e){$('wiMsg').textContent=e.message}}}
+  const cs=$('copySum');if(cs)cs.onclick=async()=>{try{await navigator.clipboard.writeText(summaryText());cs.textContent='Copied'}catch(e){cs.textContent='Copy failed'}setTimeout(()=>cs.textContent='Copy summary',1800)};
+  const pp=$('printPage');if(pp)pp.onclick=()=>{$('results').querySelectorAll('details').forEach(d=>d.open=true);window.print()};
+}
+function summaryText(){const c=R.credit,i=R.income,v=VERDICT[c.decision];const L=[`Loan readiness: ${v[0]}`,v[1],''];
+  L.push(`Comfortable monthly instalment: ${fmt(i.safe_new_emi)}`);
+  if(R.new_emi>0)L.push(`Instalment asked about: ${fmt(R.new_emi)}. Estimated chance of running out of cash within 12 months: ${pct(i.ruin_probability)}.`);
+  L.push(`Estimated default risk: ${pct(c.pd,1)}.`,'','This month:');
+  R.plan.actions.forEach(a=>L.push(`- ${AG[a.agent]}: ${a.text}`));
+  L.push('','Preparation check based on illustrative criteria. Not a lender decision or licensed financial advice.');return L.join('\n')}
+function explainHTML(){
+  if(!R)return `<h2>Explanation</h2><p>Run an analysis first. This page then shows, in plain terms, why you got this advice: which helpers were chosen and what each added, how the selector decided, what drives your loan score, and the smallest changes that would help.</p><p><button class="ghost" type="button" data-go="advice">Go to the form</button></p>`;
+  const x=R.explain,c=R.credit,o=R.orchestrator,sh=Object.entries(x.shapley).map(([k,v])=>({l:AG[k],v})).sort((a,b)=>b.v-a.v);
+  const fac=c.factors.map(f=>({l:f.label,v:f.effect,c:f.effect>0?'#b04332':'#2a6a62'}));
+  const qm=Object.entries(x.q_margin||{}).map(([k,v])=>({l:AG[k],v})).sort((a,b)=>b.v-a.v);
+  const cfs=(c.counterfactuals||[]).map((cf,n)=>{const ch=cf.changes,m=R.mean_income,L=[];
+    if(ch.emi_ratio)L.push(`instalment to about ${fmt(ch.emi_ratio.to*m)}`);if(ch.buffer_months)L.push(`savings buffer to ${ch.buffer_months.to.toFixed(1)} months of spending`);
+    if(ch.utilization)L.push(`card use to ${Math.round(ch.utilization.to*100)}%`);if(ch.history_months)L.push(`${Math.round(ch.history_months.to-ch.history_months.frm)} more months of records`);
+    return `<li><b>Option ${n+1}:</b> ${L.join(', ')}. Resulting default risk ${pct(cf.new_pd,1)}.</li>`}).join('');
+  const top3=(x.q_top||[]).map(q=>`<li>${q.agents.map(a=>AG[a]).join(' + ')} <span class="v" style="color:var(--faint)">score ${q.q}</span></li>`).join('');
+  const inter=(x.interactions||[]).map(t=>`<li>${AG[t.a]} and ${AG[t.b]}: ${t.value>0?'work well together':'overlap, so doing both adds less than the sum'} (${t.value>0?'+':''}${t.value}).</li>`).join('');
+  const box=(h,body,sub)=>`<div class="card" style="margin-bottom:16px"><h3 style="font-size:17px;font-weight:300;color:var(--ink);letter-spacing:0;margin-bottom:4px">${h}</h3>${sub?`<p class="cap" style="margin:0 0 10px">${sub}</p>`:''}${body}</div>`;
+  return `<h2>Why you got this advice</h2>
+  <p>Every part of the answer can be traced. Nothing below is a black box score: each bar is measured on your own figures.</p>
+  ${box('1. Who is on the team, and what each helper adds',hbars(sh)+`<p class="cap">Measured by simulating every one of the 64 possible teams on your finances and averaging each helper's marginal value over all of them. Bars to the right add value; bars to the left cost more than they return. The units are the simulator's reward, so compare bars with each other, not with money.</p>`+teamHTML().replace('card team','team').replace('<h3>Your helper team</h3>',''),'')}
+  ${box('2. How the selector decided',`<p class="cap" style="margin-top:0">Top three combinations it scored:</p><ul style="margin:6px 0 10px;padding-left:18px;font-size:14px">${top3}</ul><p class="cap">A hand-written rule would have chosen: <b>${o.rule_agents.map(a=>AG[a]).join(', ')}</b>. ${o.feedback_shifted?'Your earlier ratings shifted this choice.':'Past ratings did not change this choice.'}</p><h4 style="font-size:14px;margin:14px 0 4px">How strongly it favours each helper overall</h4>${hbars(qm,v=>v.toFixed(3))}`,'The selector is a small neural network trained by reinforcement learning on 9,600 simulated households. These are its learned preferences for your situation.')}
+  ${box('3. Which pairs matter',`<ul style="margin:0;padding-left:18px;font-size:14px">${inter}</ul>`,'Interaction between two helpers once the others are accounted for.')}
+  ${box('4. What drives your loan score',hbars(fac,v=>(v>0?'+':'')+v.toFixed(2))+`<p class="cap">Red bars push your default risk up, green bars push it down. Higher spending and instalment ratios can only raise risk and more savings can only lower it; the model is built that way so the advice never contradicts itself. ${c.certainty==='confident'?'The model is confident about which band you fall in.':'The model is not confident which side of the line you are on, so treat the band as a guess.'}`,'Contribution of each input to your estimated default risk.')}
+  ${box('5. The smallest changes that would help',cfs?`<ul style="margin:0;padding-left:18px;font-size:14px">${cfs}</ul>`:'<p class="cap" style="margin:0">None needed, or none within the changes we search (instalment, buffer, card use, history).</p>','Found by searching 1,152 combinations and keeping the cheapest that reach the approval line.')}
+  ${box('6. What this does not tell you',`<ul style="margin:0;padding-left:18px;font-size:14px;color:var(--mute)"><li>It is a preparation check, not a lender decision.</li><li>Household behaviour and some training labels are simulated. Percentages are guidance, not promises.</li><li>With under 12 months of income records the safe limit is deliberately cautious.</li></ul>`)}`}
+async function rate(n){try{const r=await fetch('/api/feedback',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({bucket:R.bucket,mask:R.orchestrator.mask,rating:n})});$('fb').textContent=r.ok?'Thank you. Saved.':'Could not save your rating.'}catch(e){$('fb').textContent='Could not save your rating.'}}
+
+$('go').onclick=async()=>{const m=$('msg');m.className='msg';m.textContent='';
+  try{const body=collect();$('go').disabled=true;R=await runAdvice(body,true);render();$('go').textContent='Update my advice'}
+  catch(e){m.className='msg err';m.textContent=e.message;if(!R)$('results').innerHTML=`<div class="empty"><h2>That did not work</h2><p>${esc(e.message)}</p></div>`}
+  finally{$('go').disabled=false}};
+
+/* ---------- other pages ---------- */
+const SVC={income:['Income','Stability, ruin risk, safe instalment'],credit:['Credit','Loan score, counterfactuals, conformal sets'],rl:['Orchestrator','Chooses which helpers act'],agents:['Helpers','Six agents, plan and projection'],xai:['Explanations','Contribution of each helper'],feedback:['Feedback','Ratings and preference updates']};
+async function loadSvc(){try{const s=await (await fetch('/api/services')).json();$('svcgrid').innerHTML=Object.entries(SVC).map(([k,[t,d]])=>`<div class="svc"><b><span class="dot ${s[k]==='ok'?'ok':'bad'}"></span>${t}</b><span>${d}</span></div>`).join('')}catch(e){}}
+let evalLoaded=false;
+async function loadEval(){if(evalLoaded)return;
+  try{const d=await (await fetch('/api/results')).json();if(!d.rl)throw 0;evalLoaded=true;
+    const h=d.rl.headline,pv=d.rl.paired_vs_rule,ic=d.income,cr=d.credit.per_seed_summary,xa=d.xai,cal=Object.fromEntries(ic.calibrated_agg.map(a=>[a.n,a]));
+    const row=(k,l)=>`<tr><td>${l}</td><td class="n">${h[k].mean.toFixed(2)}</td><td class="n">[${h[k].ci[0].toFixed(2)}, ${h[k].ci[1].toFixed(2)}]</td><td class="n">${h[k].cvar5.toFixed(2)}</td><td class="n">${h[k].calls.toFixed(0)}</td></tr>`;
+    const A={};ic.agg.forEach(a=>A[a.method+'|'+a.n]=a);
+    $('evalbody').innerHTML=`<div class="kpis">
+      <div class="kpi"><small>Selector vs a hand-written rule</small><b>+${(pv.mean_diff/h.rule.mean*100).toFixed(1)}%</b><i>mean return; tail gain +${((h.dqn.cvar5/h.rule.cvar5-1)*100).toFixed(0)}%</i></div>
+      <div class="kpi"><small>Realised cash-out rate, 12+ months of history</small><b>${(cal[12].realised*100).toFixed(0)}%</b><i>against a 10% target, averaged over unseen income patterns</i></div>
+      <div class="kpi"><small>Loan model accuracy (AUC)</small><b>${cr.full.auc[0].toFixed(2)}</b><i>on the augmented label; ${d.credit.per_seed_summary.orig_auc_gmsc[0].toFixed(2)} on original public labels</i></div>
+      <div class="kpi"><small>Explanation faithfulness</small><b>${(xa.deletion.top_gt_low*100).toFixed(0)}%</b><i>of households: removing the top-credited helper costs more than the lowest</i></div></div>
+      <h3>Which helpers to use: comparison on ${d.rl.n_test.toLocaleString()} unseen simulated households</h3>
+      <table><thead><tr><th>Selector</th><th>Mean 12-month return</th><th>95% interval</th><th>Worst 5% average</th><th>Helper calls a year</th></tr></thead><tbody>${row('random','Random subset')}${row('all','All six helpers')}${row('rule','Hand-written rules')}${row('dqn','Learned selector')}</tbody></table>
+      <p class="hint" style="margin-top:8px">The learned selector beats the rules in most households but loses slightly for near retirees. The gain is modest and comes from a simulator we wrote.</p>
+      <h3>Does the safe instalment hold up?</h3>
+      <p>We tested it on income patterns it was not fitted to. The share of cases where cash really ran out within a year, against the 10% target:</p>
+      <table><thead><tr><th>Months of history</th><th>Plain model</th><th>With stricter margin</th><th>Worst-month rule</th></tr></thead><tbody>${[3,6,12,24].map(m=>`<tr><td>${m}</td><td class="n">${(A['ours|'+m].realised*100).toFixed(0)}%</td><td class="n">${(A['ours_cal|'+m].realised*100).toFixed(0)}%</td><td class="n">${(A['worst_month|'+m].realised*100).toFixed(0)}%</td></tr>`).join('')}</tbody></table>
+      <p class="hint" style="margin-top:8px">Only with a year or more of records does the stricter margin reach the target on average. Income that swings between long good and bad spells stays well above it.</p>
+      <h3>Known limits</h3>
+      <ul><li>The credit model does not carry over to the German Credit dataset (AUC ${d.credit.lodo.german.auc_orig[0].toFixed(2)}).</li>
+      <li>The stability score ranks risk slightly worse than plain income variation. The ruin estimate drives decisions, not the score.</li>
+      <li>No real household income records were available. All household behaviour is simulated.</li></ul>`;
+    document.querySelectorAll('#evalbody table').forEach(t=>{const w=document.createElement('div');w.className='tw';t.replaceWith(w);w.appendChild(t)});
+  }catch(e){$('evalbody').innerHTML='<p class="hint">Results are not available. Run the experiment scripts first.</p>'}}
+
+/* ---------- boot ---------- */
+(async()=>{
+  try{presets=await (await fetch('/api/presets')).json();
+    const keys=Object.keys(presets);
+    $('examples').innerHTML=keys.map(k=>`<button class="chip" type="button" data-k="${k}" aria-pressed="false">${esc(presets[k].label.split(' (')[0])}</button>`).join('');
+    $('examples').querySelectorAll('.chip').forEach(b=>b.onclick=()=>{$('examples').querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-pressed',x===b));fill(presets[b.dataset.k])});
+    $('examples').querySelector('.chip').click();
+  }catch(e){months=[0,0,0];renderMonths()}
+  try{const s=await (await fetch('/api/services')).json();const ok=Object.values(s).every(v=>v==='ok');
+    $('status').innerHTML=`<span class="dot ${ok?'ok':'bad'}"></span><span>${ok?'all services running':'some services offline'}</span>`}catch(e){$('status').innerHTML='<span class="dot bad"></span><span>offline</span>'}
+})();
+</script>
+</body>
+</html>

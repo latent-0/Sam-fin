@@ -1,0 +1,8 @@
+{
+  "functions": {
+    "app.py": {
+      "maxDuration": 30,
+      "includeFiles": "{fa/**,services/**,frontend/**,artifacts/credit_model.txt,artifacts/credit_meta.json,artifacts/dqn.npz,paper/results/*.json}"
+    }
+  }
+}

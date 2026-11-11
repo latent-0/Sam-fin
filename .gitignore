@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+.vercel/
+data/raw/
+artifacts/*.db
+artifacts/*.log
+paper/results/*.npz
+*.egg-info/
+.DS_Store

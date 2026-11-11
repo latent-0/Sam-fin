@@ -1,0 +1,14 @@
+data/
+scripts/
+tests/
+paper/figures/
+paper/tables/
+paper/*.pdf
+artifacts/*.log
+artifacts/*.db
+artifacts/evaluation.json
+**/__pycache__/
+.pytest_cache/
+docker-compose.yml
+Dockerfile
+run_all.py

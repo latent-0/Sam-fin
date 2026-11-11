@@ -1,0 +1,5 @@
+# runtime (what the Vercel function installs): the credit model is evaluated without lightgbm
+numpy>=1.26
+fastapi>=0.110
+httpx>=0.27
+pydantic>=2.6

@@ -1,0 +1,46 @@
+{
+  "feats": [
+    "age",
+    "debt_ratio",
+    "utilization",
+    "d30",
+    "d60",
+    "d90",
+    "open_lines",
+    "dependents",
+    "income_cv",
+    "semi_dev_ratio",
+    "history_months",
+    "buffer_months",
+    "emi_ratio",
+    "gig",
+    "expense_ratio"
+  ],
+  "qhat": {
+    "0": 0.28323327720310937,
+    "1": 0.9314514528653317
+  },
+  "metrics": {
+    "auc_test_aug": 0.8445,
+    "brier_test": 0.095,
+    "auc_test_original_label": 0.7736,
+    "per_source_auc_original": {
+      "german": 0.3989,
+      "gmsc": 0.7826,
+      "taiwan": 0.6964
+    },
+    "n_train": 126700,
+    "n_cal": 27150,
+    "n_test": 27150,
+    "datasets": {
+      "gmsc": 150000,
+      "taiwan": 30000,
+      "german": 1000
+    },
+    "base_rate_aug": 0.1484,
+    "auc_test_aug_no_volatility_features": 0.8366,
+    "conformal_coverage": 0.8985
+  },
+  "approve_pd": 0.1,
+  "review_pd": 0.22
+}

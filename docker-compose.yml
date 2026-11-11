@@ -1,0 +1,29 @@
+# Seven containers from one image; run `python scripts/train_all.py` first so artifacts/ exists.
+x-svc: &svc
+  build: .
+  image: financial-advisor
+services:
+  income:   { <<: *svc, environment: { SERVICE: income_svc,   PORT: "8101" } }
+  credit:   { <<: *svc, environment: { SERVICE: credit_svc,   PORT: "8102" } }
+  agents:   { <<: *svc, environment: { SERVICE: agents_svc,   PORT: "8103" } }
+  rl:       { <<: *svc, environment: { SERVICE: rl_svc,       PORT: "8104" } }
+  xai:      { <<: *svc, environment: { SERVICE: xai_svc,      PORT: "8105" } }
+  feedback:
+    <<: *svc
+    environment: { SERVICE: feedback_svc, PORT: "8106", FEEDBACK_DB: /data/feedback.db }
+    volumes: [ "feedback-data:/data" ]
+  gateway:
+    <<: *svc
+    ports: [ "8100:8100" ]
+    depends_on: [ income, credit, agents, rl, xai, feedback ]
+    environment:
+      SERVICE: gateway
+      PORT: "8100"
+      INCOME_URL: http://income:8101
+      CREDIT_URL: http://credit:8102
+      AGENTS_URL: http://agents:8103
+      RL_URL: http://rl:8104
+      XAI_URL: http://xai:8105
+      FEEDBACK_URL: http://feedback:8106
+volumes:
+  feedback-data:
