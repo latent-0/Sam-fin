@@ -34,7 +34,7 @@ def test_static_and_meta_routes(client):
     assert set(client.get("/api/presets").json()) == set(PRESETS)
     assert client.get("/api/services").json() == {k: "ok" for k in
                                                   ("income", "credit", "agents", "rl", "xai", "feedback")}
-    assert {"rl", "income", "credit", "xai", "system"} <= set(client.get("/api/results").json())
+    assert {"rl", "income", "credit", "xai", "system", "attention"} <= set(client.get("/api/results").json())
 
 
 @pytest.mark.parametrize("name", list(PRESETS))
@@ -70,3 +70,22 @@ def test_feedback_roundtrip(client):
 def test_validation(client):
     assert client.post("/api/advise", json={"income_history": [1000], "monthly_expenses": 500}).status_code == 422
     assert client.post("/api/advise", json={"income_history": [0, 0], "monthly_expenses": 500}).status_code == 422
+
+
+def test_new_response_blocks(client):
+    d = client.post("/api/advise", json=body("gig")).json()
+    assert len(d["income"]["pattern"]["focus"]) == 3
+    sal = d["explain"]["saliency"]
+    assert len(sal["features"]) == 14 and len(sal["rows"]) == 5 and len(sal["rows"][0]["values"]) == 14
+    assert len(d["explain"]["interaction_matrix"]) == 6
+    assert "saliency" not in d["orchestrator"]
+
+
+def test_shock_route(client):
+    b = body("freelancer")
+    r = client.post("/api/shock", json=dict(income_history=b["income_history"], monthly_expenses=b["monthly_expenses"],
+                                           new_emi=10000, buffer=130000, drop=0.5, months=3, start=2))
+    assert r.status_code == 200
+    s = r.json()
+    assert s["ruin"] >= s["ruin_base"] and s["shock"]["start"] == 2
+    assert client.post("/api/shock", json=dict(income_history=[1, 2], monthly_expenses=1, drop=2)).status_code == 422

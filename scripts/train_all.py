@@ -3,9 +3,10 @@
 1. downloads the three public credit datasets once (data/raw/), augments them and
    trains the monotone LightGBM model  -> artifacts/credit_model.txt, credit_meta.json
 2. simulates 12,000 households and trains the Double-DQN orchestrator -> artifacts/dqn.npz
-3. a quick held-out evaluation of the selectors -> artifacts/evaluation.json
+3. trains the attention pattern reader -> artifacts/attention.npz, paper/results/attention.json
+4. a quick held-out evaluation of the selectors -> artifacts/evaluation.json
 
-    python scripts/train_all.py [dqn_ticks]       # ~2-3 minutes on a desktop CPU
+    python scripts/train_all.py [dqn_ticks]       # about 5 minutes on a desktop CPU
 
 The full paper experiments live in scripts/paper/ (see scripts/paper/run_all.py).
 """
@@ -20,6 +21,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
 
+import train_attention  # noqa: E402
 import train_credit  # noqa: E402
 import train_dqn  # noqa: E402
 from fa import dqn as Q, env as E  # noqa: E402
@@ -45,6 +47,8 @@ def main(ticks: int = 20000):
     train_credit.main(0)
     print("== orchestrator")
     net, _ = train_dqn.main(ticks, 0)
+    print("== pattern reader")
+    train_attention.main()
     print("== evaluation on 2,400 held-out households")
     ev = quick_eval(net)
     (ROOT / "artifacts" / "evaluation.json").write_text(json.dumps(ev, indent=1))

@@ -233,3 +233,48 @@ def emi_amount(principal: float, annual_rate: float, months: int) -> float:
     if r == 0:
         return principal / months
     return principal * r * (1 + r) ** months / ((1 + r) ** months - 1)
+
+
+# ---------------------------------------------------------------------------
+# shock test: what if income drops for a stretch of months
+# ---------------------------------------------------------------------------
+CASH_BINS = 24
+SAMPLE_PATHS = 60
+
+
+def shock_test(history, expenses: float, emi: float, buffer: float, drop: float, months: int, start: int,
+               seed: int = SEED) -> dict:
+    """Re-run the 12-month simulation with income cut by ``drop`` for ``months`` months from ``start`` (1-based).
+
+    Returns ruin and safe EMI with and without the shock, quantiles of cumulative cash per month,
+    a month x cash-level density map, and a few sample cash paths.
+    """
+    n = len(history)
+    a_eff = calibrated_alpha(n)
+    base = simulate(fit(history), seed=seed)
+    shocked = base.copy()
+    s0 = int(np.clip(start, 1, HORIZON)) - 1
+    shocked[:, s0:s0 + int(months)] *= 1.0 - float(np.clip(drop, 0, 1))
+    cash = buffer + np.cumsum(shocked - expenses - emi, axis=1)
+    lo, hi = float(np.quantile(cash, 0.02)), float(np.quantile(cash, 0.98))
+    if hi - lo < 1e-9:
+        hi = lo + 1.0
+    edges = np.linspace(lo, hi, CASH_BINS + 1)
+    dens = np.stack([np.histogram(cash[:, t], bins=edges)[0] for t in range(HORIZON)], axis=1).astype(float)
+    dens /= max(dens.max(), 1.0)
+    pick = np.random.default_rng(seed + 1).choice(len(cash), SAMPLE_PATHS, replace=False)
+    first_neg = np.where((cash < 0).any(axis=1), (cash < 0).argmax(axis=1) + 1, 0)
+    return dict(
+        ruin=ruin_probability(shocked, expenses, emi, buffer),
+        ruin_base=ruin_probability(base, expenses, emi, buffer),
+        safe_emi=safe_emi(shocked, expenses, buffer, a_eff),
+        safe_emi_base=safe_emi(base, expenses, buffer, a_eff),
+        buffer_needed=required_buffer(shocked, expenses, emi, a_eff),
+        alpha_effective=a_eff,
+        cash_quantiles={str(q): np.round(np.quantile(cash, q, axis=0)).tolist() for q in (0.05, 0.25, 0.5, 0.75, 0.95)},
+        density=dens.round(3).tolist(),
+        cash_edges=np.round(edges).tolist(),
+        paths=np.round(cash[pick]).tolist(),
+        month_of_first_shortfall=[int(m) for m in np.bincount(first_neg, minlength=HORIZON + 1)[1:]],
+        shock=dict(drop=float(drop), months=int(months), start=s0 + 1),
+    )

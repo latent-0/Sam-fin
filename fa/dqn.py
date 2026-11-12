@@ -54,6 +54,16 @@ class QNet:
 
     __call__ = forward
 
+    def input_grad(self, x, a: int) -> np.ndarray:
+        """dQ(x, a) / dx for one state x; returns shape (OBS_DIM,)."""
+        x = np.atleast_2d(np.asarray(x, float))
+        p = self.p
+        z1 = x @ p["W1"] + p["b1"]
+        z2 = np.maximum(z1, 0) @ p["W2"] + p["b2"]
+        d2 = p["W3"][:, a] * (z2[0] > 0)
+        d1 = (d2 @ p["W2"].T) * (z1[0] > 0)
+        return d1 @ p["W1"].T
+
     def grads(self, cache, dq) -> dict:
         x, h1, h2 = cache
         p = self.p

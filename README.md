@@ -12,9 +12,22 @@ freelancers, seasonal earners and new graduates:
 
 Live demo: **https://my-financial-advisor.vercel.app**
 
-Every number shown to the user has a defined statistical meaning and an experiment that tests it
-(`scripts/paper/`). The household population, agent mechanics and reward are simulated, and the volatility
-variables attached to the public credit data are synthetic. See *Limitations* below.
+The household population, agent mechanics and reward are simulated, and the volatility variables attached
+to the public credit data are synthetic. See *Limitations* below.
+
+### Beyond the paper
+
+- **Pattern reader** (`fa/attention.py`): a two-head attention model, written and trained in NumPy, that
+  reads the raw months and estimates the 12-month ruin probability. It is trained on five simulated
+  income processes. It beats the smooth AR(1) estimate on long good and bad spells and on zero-income
+  months, including when that income type is left out of training, and it does not help on seasonal
+  income it has not seen (`paper/results/attention.json`). The UI shows its attention heads as heatmaps.
+- **Shock lab**: cut income by any share, for any stretch of months, and the ruin probability, safe
+  instalment, required buffer, cash paths and a month by cash-level density map are recomputed live
+  (`POST /api/shock`).
+- **Explanation heatmaps**: gradient x input saliency of the orchestrator's top five teams over the 14
+  state features, the 6 x 6 helper interaction matrix, and the value of all 64 teams.
+- **Onboarding tour** on first visit, and from the Tour button.
 
 ---
 
@@ -61,6 +74,9 @@ fa/                     core library (no web code)
   dqn.py                Double DQN in NumPy (14-128-128-63), rule-guided exploration, evaluation
   agents.py             plan builder: actions, conflict resolution, 12-month projection
   xai.py                coalition values, exact Shapley values, interaction indices, Q-margins
+  attention.py          pattern reader: multi-head attention over months, NumPy forward/backward
+  processes.py          five simulated income processes used for stress tests and training
+  features.py           model feature names (dependency-free, safe for the serverless runtime)
   feedback.py           ratings store (SQLite) and the bounded online preference update
 services/               one FastAPI app per service + the gateway
 frontend/               single-page UI (index.html) and example profiles (presets.json)
@@ -82,7 +98,7 @@ Dockerfile, docker-compose.yml
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements-train.txt
 
-python scripts/train_all.py      # downloads datasets once, trains both models (~2-3 min)
+python scripts/train_all.py      # downloads datasets once, trains all three models (~5 min)
 python run_all.py                # starts 7 services; open http://127.0.0.1:8100
 python -m pytest tests -q
 ```
@@ -118,6 +134,7 @@ required buffer, forecast fan, checklist), `credit` (PD, score, band, conformal 
 counterfactuals, history path), `orchestrator` (chosen subset, rule subset, top-Q subsets), `plan` (actions,
 conflicts, projections with and without the plan) and `explain` (Shapley values, interactions, Q-margins,
 narrative). Other routes: `POST /api/feedback {bucket, mask, rating}`, `GET /api/services`,
+`POST /api/shock {income_history, monthly_expenses, new_emi, buffer, drop, months, start}`,
 `GET /api/results`, `GET /api/presets`.
 
 Each service also exposes its own contract: `income /analyse`, `credit /assess`, `rl /select`,
@@ -158,6 +175,7 @@ python scripts/paper/run_all.py        # all experiments + figures
 | RQ3 orchestrator vs selectors, personas, oracle, distribution shift | `exp_rl.py` | `rl.json`, `rl_returns.npz` |
 | RQ4 faithfulness of agent-Shapley explanations | `exp_xai.py` | `xai.json` |
 | RQ5/RQ6 counterfactuals, feedback study, latency | `exp_system.py` | `system.json` |
+| Pattern reader vs AR(1), by income type | `scripts/train_attention.py` | `attention.json` |
 | Figures | `make_figures.py` | `paper/figures/*.png` |
 
 `paper/results/` holds the results reported in the manuscript, which the web app's Evidence page reads.

@@ -29,6 +29,9 @@ PERSONAS = ["gig", "salaried_loan", "student", "near_retiree"]
 PERSONA_LABELS = ["Gig worker", "Salaried + loans", "Student / graduate", "Near retiree"]
 PERSONA_P = [0.30, 0.35, 0.20, 0.15]
 HORIZON = 12
+OBS_LABELS = ["Monthly surplus", "Income swing", "Downside swing", "Existing EMI", "Debt size", "Debt rate",
+              "Reserve vs target", "Goal gap", "Months to goal", "Risk comfort", "Share invested",
+              "Cash on hand", "Age", "Month of year"]
 
 AR_PHI = 0.3
 BUDGET_CUT = 0.12

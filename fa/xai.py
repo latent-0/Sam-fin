@@ -65,6 +65,13 @@ def interactions(v: np.ndarray, n: int = E.N_AGENTS) -> dict:
     return out
 
 
+def _matrix(inter: dict) -> list:
+    m = np.zeros((E.N_AGENTS, E.N_AGENTS))
+    for (i, j), x in inter.items():
+        m[i, j] = m[j, i] = x
+    return m.round(4).tolist()
+
+
 def q_margins(q: np.ndarray) -> dict:
     """Mean Q over subsets containing each agent minus mean over subsets without it."""
     bits = E.mask_to_bits(np.arange(1, 64))
@@ -112,6 +119,8 @@ def explain(P1: dict, mask: int, q: np.ndarray | None = None, draws: int = DRAWS
         interactions=[dict(a=E.AGENTS[i], b=E.AGENTS[j], value=round(float(x), 4),
                            kind="synergy" if x > 0 else "overlap") for (i, j), x in top],
         narrative=narrative(sh, chosen),
+        interaction_matrix=_matrix(inter),
+        coalition_values=v.round(4).tolist(),
     )
     if q is not None:
         q = np.asarray(q, float)

@@ -260,6 +260,58 @@ td.n{font-variant-numeric:tabular-nums}
 .kpi b{font:200 30px var(--head);display:block;margin:2px 0}
 .kpi i{font-style:normal;font-size:12.5px;color:var(--faint)}
 svg text{fill:var(--mute);font:11px var(--body)}
+
+/* heatmaps */
+.hm{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.hm svg{display:block;max-width:100%;height:auto}
+.hm rect.c{stroke:var(--surface);stroke-width:1}
+.hm rect.c:hover{stroke:var(--ink);stroke-width:1.5}
+.hm .on{fill:none;stroke:var(--ink);stroke-width:2}
+.legend{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--faint);margin-top:6px}
+.legend i{display:block;width:120px;height:8px;border-radius:99px}
+.heads{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:700px){.heads{grid-template-columns:1fr}}
+.duo{display:flex;gap:28px;flex-wrap:wrap;margin:2px 0 14px}
+.duo div small{display:block;font-size:12.5px;color:var(--mute)}
+.duo div b{font:200 30px var(--head)}
+
+/* shock lab */
+.lab{margin-bottom:16px}
+.lab-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.lab-top h3{margin:0}
+.lab-pre{display:flex;gap:6px;flex-wrap:wrap}
+.lab-pre .chip{font-size:12.5px;padding:4px 11px}
+.lab-ctl{display:grid;grid-template-columns:repeat(3,1fr);gap:8px 20px;margin:14px 0 6px}
+@media(max-width:700px){.lab-ctl{grid-template-columns:1fr}}
+.lab-ctl label{margin:0;font-size:13px}
+.lab-ctl label b{float:right;color:var(--ink);font-weight:500}
+.lab-ctl input[type=range]{width:100%;accent-color:var(--accent);margin:8px 0 0}
+.lab-read{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:10px 0 14px}
+@media(max-width:700px){.lab-read{grid-template-columns:1fr}}
+.lab-read div{background:var(--bg);border-radius:10px;padding:10px 12px}
+.lab-read small{display:block;font-size:12px;color:var(--mute)}
+.lab-read b{font:200 26px var(--head);font-variant-numeric:tabular-nums}
+.lab-read i{font-style:normal;font-size:12px;color:var(--faint);margin-left:6px}
+.lab-read b.up{color:var(--bad)}
+.lab-viz{display:grid;grid-template-columns:1.2fr 1fr;gap:16px;align-items:start}
+@media(max-width:900px){.lab-viz{grid-template-columns:1fr}}
+.lab canvas{width:100%;height:220px;display:block;background:var(--bg);border-radius:10px}
+.busy{opacity:.55;transition:opacity .15s}
+
+/* onboarding tour */
+.tour-hole{position:fixed;z-index:60;border-radius:12px;box-shadow:0 0 0 9999px rgba(20,28,36,.55);pointer-events:none;transition:all .25s ease}
+.tour-card{position:fixed;z-index:61;width:min(340px,calc(100vw - 32px));background:var(--surface);border-radius:14px;padding:18px 18px 14px;box-shadow:0 12px 40px rgba(0,0,0,.18)}
+.tour-card h4{font:400 17px var(--head);margin:0 0 6px}
+.tour-card p{margin:0;color:var(--mute);font-size:14px}
+.tour-nav{display:flex;justify-content:space-between;align-items:center;margin-top:14px;gap:8px}
+.tour-dots{display:flex;gap:5px}
+.tour-dots i{width:6px;height:6px;border-radius:50%;background:var(--line2)}
+.tour-dots i.on{background:var(--accent)}
+.tour-nav .primary{width:auto;padding:8px 16px;font-size:14px}
+.tour-skip{background:none;border:0;color:var(--faint);cursor:pointer;font-size:13px;padding:6px 2px}
+.tourbtn{background:none;border:1px solid var(--line2);border-radius:99px;padding:4px 12px;font-size:12.5px;color:var(--mute);cursor:pointer}
+.tourbtn:hover{border-color:var(--accent);color:var(--accent)}
+@media(max-width:700px){.tour-card{left:16px!important;right:16px;bottom:16px!important;top:auto!important;width:auto}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -272,7 +324,7 @@ svg text{fill:var(--mute);font:11px var(--body)}
     <button data-page="how">How it works</button>
     <button data-page="eval">Evidence</button>
   </nav>
-  <div class="status" id="status" title="Backend services"><span class="dot"></span><span>checking</span></div>
+  <div class="status"><button class="tourbtn" id="tourBtn" type="button">Tour</button><span id="status" class="status" title="Backend services"><span class="dot"></span><span>checking</span></span></div>
 </header>
 
 <main class="page">
@@ -280,13 +332,13 @@ svg text{fill:var(--mute);font:11px var(--body)}
 <section id="p-advice" class="advice">
   <div class="formcol">
     <h1 class="lede">Plan around the months you actually have.</h1>
-    <p class="sub">Enter what you earned recently, what you spend, and any loan you are considering. You will get a plain answer first and the working behind it after.</p>
+    <p class="sub">Enter recent income, spending and the loan you have in mind. The answer comes first, the working after.</p>
 
     <div class="examples" id="examples" role="group" aria-label="Start from an example"></div>
 
     <div class="block">
       <h3>Monthly income</h3>
-      <p class="hint">One value per month, oldest first. Real months beat averages: add every one you have.</p>
+      <p class="hint">One value per month, oldest first.</p>
       <div class="months" id="months"></div>
       <button class="linkbtn" id="addMonth" type="button">+ Add a month</button>
       <div class="spark" id="spark"></div>
@@ -304,7 +356,7 @@ svg text{fill:var(--mute);font:11px var(--body)}
       </div>
     </div>
 
-    <div class="block">
+    <div class="block" id="loanBlock">
       <h3>The loan you are considering</h3>
       <p class="hint">Leave the amount at 0 if you only want a plan.</p>
       <div class="grid3">
@@ -360,14 +412,14 @@ svg text{fill:var(--mute);font:11px var(--body)}
 
   <div id="results" aria-live="polite">
     <div class="empty">
-      <h2>Know what you can safely borrow, and what to do next.</h2>
-      <p>Most calculators assume a steady salary. This one is built for income that moves, and it shows its working.</p>
+      <h2>How much can you safely borrow?</h2>
+      <p>Built for income that changes month to month.</p>
       <div class="vp">
-        <div><b>A limit sized to your worst months</b><span>We simulate thousands of possible years from your own income history and find the largest instalment that rarely leaves you short.</span></div>
-        <div><b>A path from "no" to "yes"</b><span>If the loan looks too heavy, you get the cheapest changes that would fix it, and roughly how many months they take.</span></div>
-        <div><b>A plan with reasons</b><span>A team of six helpers (budget, debt, emergency fund, goal, income protection, investing) is picked by a learned selector, and each one's contribution is measured.</span></div>
+        <div><b>A limit sized to bad months</b><span>Thousands of simulated years from your own income give the largest instalment that rarely leaves you short.</span></div>
+        <div><b>What to change</b><span>If the loan is too heavy, the cheapest changes that fix it and how long they take.</span></div>
+        <div><b>A plan for this month</b><span>A learned selector picks from six helpers. Each one's value is measured on your figures.</span></div>
       </div>
-      <p class="hint" style="margin-top:18px">Pick an example on the left to see it work, or enter your own numbers. Nothing you enter leaves this machine.</p>
+      <p class="hint" style="margin-top:18px">Pick an example on the left or enter your own numbers. Nothing is stored except an optional rating.</p>
     </div>
   </div>
 </section>
@@ -378,12 +430,13 @@ svg text{fill:var(--mute);font:11px var(--body)}
 <!-- ================= HOW ================= -->
 <section id="p-how" class="prose" hidden>
   <h2>How it works</h2>
-  <p>This is a preparation tool. It does not approve loans and it is not financial advice from a licensed adviser. It checks the figures you give it against illustrative criteria and simulates your next twelve months.</p>
+  <p>A preparation tool, not a lender and not licensed financial advice. It checks your figures against illustrative criteria and simulates the next twelve months.</p>
   <h3>Three questions, three methods</h3>
   <ol>
     <li><b>How big an instalment is safe?</b> Your income history is turned into thousands of possible next years. The safe instalment is the largest one for which cash runs out in only a small share of them. With fewer than 12 months of records we use a stricter margin, because short histories fool simple models.</li>
     <li><b>What would get me approved?</b> A credit model trained on three public datasets scores the loan, then searches for the cheapest changes, such as a smaller instalment or a bigger cash buffer, that would move the score into the likely range.</li>
     <li><b>What should I do this month?</b> A learned selector chooses which of six helpers (budgeting, debt, emergency fund, goal, income protection, investing) should act. Each helper's contribution is measured by simulating every combination.</li>
+    <li><b>What if a bad stretch hits?</b> The shock lab cuts income for the months you choose and reruns the simulation. A second model, the pattern reader, uses attention over your raw months to catch long lean spells and zero months.</li>
   </ol>
   <h3>Services behind the page</h3>
   <div class="svcgrid" id="svcgrid"></div>
@@ -398,7 +451,7 @@ svg text{fill:var(--mute);font:11px var(--body)}
 <!-- ================= EVIDENCE ================= -->
 <section id="p-eval" class="prose" hidden style="max-width:980px">
   <h2>The evidence</h2>
-  <p>These numbers come from the experiments described in the accompanying paper. They are simulated or based on public datasets, and the limits are stated next to each result.</p>
+  <p>Results from the experiments in the accompanying paper. All are simulated or based on public datasets.</p>
   <div id="evalbody"><p class="hint">Loading.</p></div>
 </section>
 </main>
@@ -408,7 +461,7 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 let CUR='₹', presets={}, R=null, months=[], form={};
 const num=id=>{const v=parseFloat($(id).value);return isNaN(v)?0:v};
-const fmt=n=>CUR+Math.round(n).toLocaleString();
+const fmt=n=>(n<0?'-':'')+CUR+Math.abs(Math.round(n)).toLocaleString();
 const pct=(n,d=0)=>(n*100).toFixed(d)+'%';
 const AG={budget:'Budgeting',debt:'Debt paydown',emergency:'Emergency fund',goal:'Goal saving',risk:'Income protection',investment:'Investing'};
 
@@ -529,13 +582,14 @@ function render(noScroll){
     <p class="small">Estimated default risk ${pct(c.pd,1)}. ${c.certainty==='confident'?'The model is confident in this band.':'The model is not sure whether this lands above or below the line.'} This is a preparation check, not a lender's decision.</p></div>
   ${actionsHTML()}
   <div class="cards">${A}${B}${C}</div>
-  ${whatifHTML()}${teamHTML()}
+  ${whatifHTML()}${labHTML()}${teamHTML()}
 
   <details class="sec" open><summary>Requirement checklist</summary><div class="in"><div class="reqs">${req}</div></div></details>
   <details class="sec"><summary>Your income, and the next twelve months</summary><div class="in"><div class="two">
     <div>${line([{y:hist,c:'#2a6a62'}],{hl:[{y:total,c:'#b04332',t:'spending + new loan'}],xl:hist.map((_,k)=>'M'+(k+1))})}<p class="cap">Recorded income against what you would spend each month.</p></div>
     <div>${line([{y:f['0.5'],c:'#2a6a62'}],{fan:[{lo:f['0.05'],hi:f['0.95'],c:'#2a6a62',o:.12},{lo:f['0.25'],hi:f['0.75'],c:'#2a6a62',o:.22}],hl:[{y:total,c:'#b04332',t:'spending + new loan'}],xl:f['0.5'].map((_,k)=>'M'+(k+1))})}<p class="cap">Simulated range for the next year. Shaded: middle half and nine in ten outcomes.</p></div></div>
     <p class="cap">In a bad month (about one in twenty) income could fall to around <b>${fmt(i.income_at_risk.iar)}</b>. Stability score ${i.stability.isi} of 100, ${i.stability.band}.</p></div></details>
+  ${patternHTML()}
   <details class="sec"><summary>Your plan over twelve months</summary><div class="in">
     ${line([{y:pj.with_plan.map(r=>r.net_worth),c:'#2a6a62'},{y:pj.without_plan.map(r=>r.net_worth),c:'#c9a15a',d:1}],{xl:pj.with_plan.map(r=>'M'+r.month)})}
     <p class="cap"><span style="color:#2a6a62">Solid</span>: net worth following the plan. <span style="color:#a98340">Dashed</span>: without it. Expected difference after a year: <b>${fmt(R.plan.net_worth_gain_12m)}</b>. Months with a cash shortfall: ${pct(R.plan.risk.shortfall_month_prob_with_plan,1)} with the plan, ${pct(R.plan.risk.shortfall_month_prob_without_plan,1)} without.</p>
@@ -547,7 +601,7 @@ function render(noScroll){
   <p class="foot">Illustrative criteria, not lender policy. Figures are simulated estimates from the information you entered and will differ from real outcomes.</p>`;
   $('results').querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>rate(+b.dataset.r));
   $('results').querySelectorAll('details.sec').forEach((d,k)=>{if(openState[k]!==undefined)d.open=openState[k]});
-  wireResults();
+  wireResults();wireLab();
   if(!noScroll)document.querySelector('.verdict').scrollIntoView({behavior:'smooth',block:'start'});
 }
 const STEPS=[['income','Income analysis'],['credit','Loan readiness'],['feedback','Past feedback'],['rl','Choosing helpers'],['agents','Building the plan'],['xai','Explaining the choice']];
@@ -604,11 +658,12 @@ function explainHTML(){
   const inter=(x.interactions||[]).map(t=>`<li>${AG[t.a]} and ${AG[t.b]}: ${t.value>0?'work well together':'overlap, so doing both adds less than the sum'} (${t.value>0?'+':''}${t.value}).</li>`).join('');
   const box=(h,body,sub)=>`<div class="card" style="margin-bottom:16px"><h3 style="font-size:17px;font-weight:300;color:var(--ink);letter-spacing:0;margin-bottom:4px">${h}</h3>${sub?`<p class="cap" style="margin:0 0 10px">${sub}</p>`:''}${body}</div>`;
   return `<h2>Why you got this advice</h2>
-  <p>Every part of the answer can be traced. Nothing below is a black box score: each bar is measured on your own figures.</p>
-  ${box('1. Who is on the team, and what each helper adds',hbars(sh)+`<p class="cap">Measured by simulating every one of the 64 possible teams on your finances and averaging each helper's marginal value over all of them. Bars to the right add value; bars to the left cost more than they return. The units are the simulator's reward, so compare bars with each other, not with money.</p>`+teamHTML().replace('card team','team').replace('<h3>Your helper team</h3>',''),'')}
-  ${box('2. How the selector decided',`<p class="cap" style="margin-top:0">Top three combinations it scored:</p><ul style="margin:6px 0 10px;padding-left:18px;font-size:14px">${top3}</ul><p class="cap">A hand-written rule would have chosen: <b>${o.rule_agents.map(a=>AG[a]).join(', ')}</b>. ${o.feedback_shifted?'Your earlier ratings shifted this choice.':'Past ratings did not change this choice.'}</p><h4 style="font-size:14px;margin:14px 0 4px">How strongly it favours each helper overall</h4>${hbars(qm,v=>v.toFixed(3))}`,'The selector is a small neural network trained by reinforcement learning on 9,600 simulated households. These are its learned preferences for your situation.')}
+  <p>Each chart below is computed from your figures.</p>
+  ${box('1. Who is on the team, and what each helper adds',hbars(sh)+`<p class="cap">Average value each helper adds across all 64 possible teams. Compare bars with each other; the units are not money.</p>`+teamHTML().replace('card team','team').replace('<h3>Your helper team</h3>',''),'')}
+  ${box('2. How the selector decided',`<p class="cap" style="margin-top:0">Top three combinations it scored:</p><ul style="margin:6px 0 10px;padding-left:18px;font-size:14px">${top3}</ul><p class="cap">A hand-written rule would have chosen: <b>${o.rule_agents.map(a=>AG[a]).join(', ')}</b>. ${o.feedback_shifted?'Your earlier ratings shifted this choice.':'Past ratings did not change this choice.'}</p><h4 style="font-size:14px;margin:14px 0 4px">How strongly it favours each helper overall</h4>${hbars(qm,v=>v.toFixed(3))}`,'A small neural network trained by reinforcement learning on 9,600 simulated households.')}
+  ${explainHeatmaps()}
   ${box('3. Which pairs matter',`<ul style="margin:0;padding-left:18px;font-size:14px">${inter}</ul>`,'Interaction between two helpers once the others are accounted for.')}
-  ${box('4. What drives your loan score',hbars(fac,v=>(v>0?'+':'')+v.toFixed(2))+`<p class="cap">Red bars push your default risk up, green bars push it down. Higher spending and instalment ratios can only raise risk and more savings can only lower it; the model is built that way so the advice never contradicts itself. ${c.certainty==='confident'?'The model is confident about which band you fall in.':'The model is not confident which side of the line you are on, so treat the band as a guess.'}`,'Contribution of each input to your estimated default risk.')}
+  ${box('4. What drives your loan score',hbars(fac,v=>(v>0?'+':'')+v.toFixed(2))+`<p class="cap">Red raises default risk, green lowers it. The model is constrained so more savings never raises risk and a bigger instalment never lowers it. ${c.certainty==='confident'?'The model is confident about which band you fall in.':'The model is not confident which side of the line you are on, so treat the band as a guess.'}`,'Contribution of each input to your estimated default risk.')}
   ${box('5. The smallest changes that would help',cfs?`<ul style="margin:0;padding-left:18px;font-size:14px">${cfs}</ul>`:'<p class="cap" style="margin:0">None needed, or none within the changes we search (instalment, buffer, card use, history).</p>','Found by searching 1,152 combinations and keeping the cheapest that reach the approval line.')}
   ${box('6. What this does not tell you',`<ul style="margin:0;padding-left:18px;font-size:14px;color:var(--mute)"><li>It is a preparation check, not a lender decision.</li><li>Household behaviour and some training labels are simulated. Percentages are guidance, not promises.</li><li>With under 12 months of income records the safe limit is deliberately cautious.</li></ul>`)}`}
 async function rate(n){try{const r=await fetch('/api/feedback',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({bucket:R.bucket,mask:R.orchestrator.mask,rating:n})});$('fb').textContent=r.ok?'Thank you. Saved.':'Could not save your rating.'}catch(e){$('fb').textContent='Could not save your rating.'}}
@@ -618,9 +673,132 @@ $('go').onclick=async()=>{const m=$('msg');m.className='msg';m.textContent='';
   catch(e){m.className='msg err';m.textContent=e.message;if(!R)$('results').innerHTML=`<div class="empty"><h2>That did not work</h2><p>${esc(e.message)}</p></div>`}
   finally{$('go').disabled=false}};
 
+/* ---------- heatmaps ---------- */
+const mix=(a,b,t)=>{const h=x=>[1,3,5].map(i=>parseInt(x.slice(i,i+2),16));const A=h(a),B=h(b);return '#'+A.map((v,i)=>Math.round(v+(B[i]-v)*Math.max(0,Math.min(1,t))).toString(16).padStart(2,'0')).join('')};
+const SEQ=v=>mix('#f1f1ec','#2a6a62',v), POS='#2a6a62', NEG='#b04332';
+function heat(m,{rows,cols,cell=26,L=120,div=false,max=null,hl=null,fmtv=v=>v.toFixed(2),rot=false}={}){
+  const R=m.length,C=m[0].length,mx=max??Math.max(...m.flat().map(Math.abs),1e-9);
+  const lmax=cols?Math.max(...cols.map(c=>String(c).length)):0,B=rot?Math.min(20+lmax*5.6,120):20,w=L+C*cell+4,h=R*cell+B+4;let g='';
+  m.forEach((row,i)=>row.forEach((v,j)=>{const t=Math.abs(v)/mx;const f=div?mix('#f6f6f2',v>=0?POS:NEG,t):SEQ(v/mx);
+    g+=`<rect class="c" x="${L+j*cell}" y="${i*cell}" width="${cell}" height="${cell}" rx="3" fill="${f}"><title>${esc(rows?rows[i]:i+1)} / ${esc(cols?cols[j]:j+1)}: ${fmtv(v)}</title></rect>`}));
+  if(hl)hl.forEach(([i,j])=>{g+=`<rect class="on" x="${L+j*cell+1}" y="${i*cell+1}" width="${cell-2}" height="${cell-2}" rx="3"/>`});
+  if(rows)rows.forEach((r,i)=>{g+=`<text x="${L-8}" y="${i*cell+cell/2+4}" text-anchor="end">${esc(r)}</text>`});
+  if(cols)cols.forEach((c,j)=>{const x=L+j*cell+cell/2,y=R*cell+14;g+=rot?`<text transform="translate(${x},${R*cell+8}) rotate(-50)" text-anchor="end">${esc(c)}</text>`:`<text x="${x}" y="${y}" text-anchor="middle">${esc(c)}</text>`});
+  return `<div class="hm"><svg viewBox="0 0 ${w} ${h}" width="${w}" role="img">${g}</svg></div>`}
+const legend=(div,lo,hi)=>`<div class="legend"><span>${lo}</span><i style="background:linear-gradient(90deg,${div?NEG+',#f6f6f2,'+POS:'#f1f1ec,#2a6a62'})"></i><span>${hi}</span></div>`;
+const SHORT={budget:'Budget',debt:'Debt',emergency:'Reserve',goal:'Goal',risk:'Cover',investment:'Invest'};
+
+/* ---------- pattern reader ---------- */
+function patternHTML(){const p=R.income.pattern;if(!p)return '';const hist=validMonths().slice(-p.months_used),n=hist.length;
+  const lab=hist.map((_,k)=>'M'+(p.first_month+k));
+  const focus=heat([p.focus],{rows:['Focus'],cols:lab,cell:n>16?22:30,L:60,max:Math.max(...p.focus)});
+  const heads=p.head_maps.map((m,h)=>`<div><h4 style="font-size:14px;margin:0 0 6px">Head ${h+1}</h4>${heat(m,{rows:lab,cols:lab,cell:n>12?14:22,L:40,max:1,fmtv:v=>pct(v)})}</div>`).join('');
+  return `<details class="sec" id="patternSec"><summary>How the pattern reader saw your months</summary><div class="in">
+    <div class="duo"><div><small>Monte Carlo model</small><b>${pct(R.income.ruin_probability)}</b></div><div><small>Pattern reader</small><b>${pct(p.ruin_probability)}</b></div></div>
+    <p class="cap" style="margin:0 0 12px">Chance of running out of cash within a year at this instalment. The pattern reader is a small attention model trained on simulated incomes. It reads the months as they are, so it catches long lean spells and near-zero months that a smooth model misses.${p.outside_training_range?' Your figures fall partly outside its training range, so weigh it less.':''}</p>
+    <h4 style="font-size:14px;margin:0 0 6px">Which months it weighed for this loan</h4>${focus}${legend(false,'less','more')}
+    <h4 style="font-size:14px;margin:18px 0 6px">Attention heads</h4><div class="heads">${heads}</div>
+    <p class="cap">Each row is a month asking which other months to look at. Darker means more weight.</p></div></details>`}
+
+/* ---------- shock lab ---------- */
+const LAB={drop:30,months:3,start:1};let labTimer=null,labSeq=0,labAnim=null;
+const LAB_PRESETS=[['Lose a client',40,3,1],['Off season',30,4,6],['Two months of nothing',90,2,3]];
+function labHTML(){return `<div class="card lab" id="lab"><div class="lab-top"><h3>Shock lab</h3><div class="lab-pre">${LAB_PRESETS.map((p,k)=>`<button class="chip" type="button" data-lp="${k}">${p[0]}</button>`).join('')}</div></div>
+  <div class="lab-ctl">
+    <label for="lDrop">Income drop <b id="lDropV"></b><input type="range" id="lDrop" min="0" max="90" step="5"></label>
+    <label for="lMon">For <b id="lMonV"></b><input type="range" id="lMon" min="1" max="12" step="1"></label>
+    <label for="lStart">Starting in month <b id="lStartV"></b><input type="range" id="lStart" min="1" max="12" step="1"></label></div>
+  <div class="lab-read" id="labRead"><div><small>Chance cash runs out</small><b>...</b></div><div><small>Safe instalment</small><b>...</b></div><div><small>Buffer that would hold</small><b>...</b></div></div>
+  <div class="lab-viz"><div><canvas id="labCv" aria-label="Simulated cash paths"></canvas><p class="cap">60 of 4,000 simulated cash paths. Red ones run out. Shaded: the shock.</p></div><div id="labHeat"></div></div></div>`}
+function labBody(){const b=collect();return {income_history:b.income_history,monthly_expenses:b.monthly_expenses,new_emi:R.new_emi,buffer:b.liquid_savings+b.emergency_fund,drop:LAB.drop/100,months:LAB.months,start:LAB.start}}
+function labSync(){$('lDrop').value=LAB.drop;$('lMon').value=LAB.months;$('lStart').value=LAB.start;
+  $('lDropV').textContent=LAB.drop+'%';$('lMonV').textContent=LAB.months+(LAB.months>1?' months':' month');$('lStartV').textContent=LAB.start}
+function wireLab(){if(!$('lab'))return;labSync();
+  const on=()=>{LAB.drop=+$('lDrop').value;LAB.months=+$('lMon').value;LAB.start=+$('lStart').value;labSync();clearTimeout(labTimer);labTimer=setTimeout(runLab,120)};
+  ['lDrop','lMon','lStart'].forEach(id=>$(id).oninput=on);
+  $('lab').querySelectorAll('[data-lp]').forEach(b=>b.onclick=()=>{const p=LAB_PRESETS[+b.dataset.lp];LAB.drop=p[1];LAB.months=p[2];LAB.start=p[3];labSync();runLab()});
+  runLab()}
+async function runLab(){const id=++labSeq;$('lab').classList.add('busy');
+  try{const r=await fetch('/api/shock',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(labBody())});if(!r.ok)throw 0;
+    const s=await r.json();if(id!==labSeq)return;drawLab(s)}catch(e){if(id===labSeq)$('labRead').innerHTML='<div><small>Shock lab</small><b>offline</b></div>'}
+  finally{if(id===labSeq)$('lab').classList.remove('busy')}}
+function drawLab(s){const d=(a,b)=>a>b+1e-9?'up':'';
+  $('labRead').innerHTML=`<div><small>Chance cash runs out</small><b class="${d(s.ruin,s.ruin_base)}">${pct(s.ruin)}</b><i>from ${pct(s.ruin_base)}</i></div>
+    <div><small>Safe instalment</small><b>${fmt(s.safe_emi)}</b><i>from ${fmt(s.safe_emi_base)}</i></div>
+    <div><small>Buffer that would hold</small><b>${fmt(s.buffer_needed)}</b><i>you have ${fmt(labBody().buffer)}</i></div>`;
+  const e=s.cash_edges,rows=s.density.length,lab=[];for(let k=rows-1;k>=0;k--)lab.push(k%4===0||k===rows-1?fmt((e[k]+e[k+1])/2):'');
+  const dens=s.density.slice().reverse();
+  $('labHeat').innerHTML=heat(dens,{rows:lab,cols:[...Array(12)].map((_,k)=>k+1),cell:15,L:76,max:1,fmtv:v=>(v*100).toFixed(0)+'% of peak'})+`<p class="cap">Where cash ends up each month across all 4,000 paths. Darker is more likely.</p>`;
+  animatePaths(s)}
+function animatePaths(s){const cv=$('labCv');if(!cv)return;const dpr=window.devicePixelRatio||1,W=cv.clientWidth,H=cv.clientHeight;cv.width=W*dpr;cv.height=H*dpr;
+  const g=cv.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);const P=s.paths,all=P.flat().concat([0]);
+  let mn=Math.min(...all),mx=Math.max(...all);const pad=(mx-mn)*.08||1;mn-=pad;mx+=pad;
+  const X=t=>12+t*(W-24)/12,Y=v=>8+(H-24)*(1-(v-mn)/(mx-mn)),neg=P.map(p=>p.some(v=>v<0));
+  const st=s.shock.start-1,en=Math.min(st+s.shock.months,12);cancelAnimationFrame(labAnim);
+  const t0=performance.now(),dur=matchMedia('(prefers-reduced-motion: reduce)').matches?0:800;
+  const frame=now=>{const k=dur?Math.min(1,(now-t0)/dur):1,upto=k*12;g.clearRect(0,0,W,H);
+    if(s.shock.drop>0){g.fillStyle='rgba(176,67,50,.08)';g.fillRect(X(st),0,X(en)-X(st),H-16)}
+    g.strokeStyle='#cfcfc8';g.setLineDash([4,4]);g.beginPath();g.moveTo(X(0),Y(0));g.lineTo(X(12),Y(0));g.stroke();g.setLineDash([]);
+    g.fillStyle='#98a1ab';g.font='11px Inter,system-ui';g.fillText('0',2,Y(0)-3);
+    P.forEach((p,i)=>{g.strokeStyle=neg[i]?'rgba(176,67,50,.55)':'rgba(42,106,98,.35)';g.lineWidth=neg[i]?1.4:1;g.beginPath();g.moveTo(X(0),Y(labBody().buffer));
+      for(let t=0;t<12&&t<upto;t++){const f=Math.min(1,upto-t),prev=t?p[t-1]:labBody().buffer;g.lineTo(X(t)+(X(t+1)-X(t))*f,Y(prev+(p[t]-prev)*f))}g.stroke()});
+    for(let t=1;t<=12;t+=t<3?2:3)g.fillText('M'+t,X(t)-8,H-3);
+    if(k<1)labAnim=requestAnimationFrame(frame)};
+  labAnim=requestAnimationFrame(frame)}
+
+/* ---------- explanation heatmaps ---------- */
+function explainHeatmaps(){const x=R.explain,ag=Object.keys(SHORT);let out='';
+  if(x.saliency){const s=x.saliency,rows=s.rows.map(r=>r.agents.map(a=>SHORT[a]).join('+'));
+    out+=`<div class="card" style="margin-bottom:16px"><h3 style="font-size:17px;font-weight:300;color:var(--ink);letter-spacing:0;margin-bottom:4px">What the selector looked at</h3><p class="cap" style="margin:0 0 10px">Its five highest-scoring teams (rows) and how much each part of your situation pushed that score up or down.</p>${heat(s.rows.map(r=>r.values),{rows,cols:s.features,cell:30,L:190,div:true,rot:true,fmtv:v=>(v>0?'+':'')+v.toFixed(3)})}${legend(true,'lowers score','raises score')}</div>`}
+  if(x.interaction_matrix){const m=x.interaction_matrix;
+    out+=`<div class="card" style="margin-bottom:16px"><h3 style="font-size:17px;font-weight:300;color:var(--ink);letter-spacing:0;margin-bottom:4px">How helpers combine</h3><p class="cap" style="margin:0 0 10px">Green pairs add more together than apart. Red pairs overlap.</p>${heat(m,{rows:ag.map(a=>AG[a]),cols:ag.map(a=>SHORT[a]),cell:38,L:130,div:true})}${legend(true,'overlap','work together')}</div>`}
+  if(x.coalition_values){const v=x.coalition_values,lo=['none','Budget','Debt','B+D','Reserve','B+R','D+R','B+D+R'],hi=['none','Goal','Cover','G+C','Invest','G+I','C+I','G+C+I'];
+    const m=[...Array(8)].map((_,i)=>[...Array(8)].map((_,j)=>v[i|(j<<3)]-x.baseline_value)),mask=R.orchestrator.mask;
+    out+=`<div class="card" style="margin-bottom:16px"><h3 style="font-size:17px;font-weight:300;color:var(--ink);letter-spacing:0;margin-bottom:4px">Every team, scored</h3><p class="cap" style="margin:0 0 10px">All 64 teams on your figures, against having no helper. The outlined cell is the team chosen.</p>${heat(m,{rows:lo,cols:hi,cell:34,L:80,div:true,hl:[[mask&7,mask>>3]],rot:true})}${legend(true,'worse','better')}</div>`}
+  return out}
+
+/* ---------- onboarding tour ---------- */
+const TOUR=[
+  {el:'#examples',t:'Start from an example',p:'Each chip fills the form with a typical household. Pick one or type your own figures.'},
+  {el:'#months',t:'Income, month by month',p:'Oldest first. The more real months you add, the less cautious the limits get.'},
+  {el:'#loanBlock',t:'The loan you are weighing',p:'Leave the amount at 0 if you only want a plan.'},
+  {el:'#go',t:'Run it',p:'Six services work through your figures in about a second. Press Next and the tour runs it for you.'},
+  {el:'.verdict',t:'The answer first',p:'Readiness band and estimated default risk.',need:1},
+  {el:'.cards',t:'Three things to act on',p:'A safe instalment, the cheapest fix if the loan is too heavy, and what to do this month.',need:1},
+  {el:'#lab',t:'Shock lab',p:'Drag the sliders to try a bad stretch. Risk, safe instalment and cash paths update as you drag.',need:1},
+  {el:'#patternSec',t:'Pattern reader',p:'A small attention model reads your months directly. Its heatmaps show which months it weighed.',need:1},
+  {el:'[data-page=explain]',t:'Why this advice',p:'Heatmaps of what the selector looked at, how helpers combine and how every team scored.',need:1}];
+let tourAt=-1;
+function tourStart(){showPage('advice');tourAt=0;tourShow()}
+function tourEnd(){tourAt=-1;document.querySelectorAll('.tour-hole,.tour-card').forEach(e=>e.remove());try{localStorage.setItem('tour-v1','1')}catch(e){}}
+async function tourNext(){if(TOUR[tourAt].el==='#go'&&!R){const c=document.querySelector('.tour-card .primary');if(c){c.disabled=true;c.textContent='Running...'}
+    try{R=await runAdvice(collect(),true);render(true)}catch(e){tourEnd();return}}
+  if(tourAt<TOUR.length-1){tourAt++;tourShow()}else tourEnd()}
+function tourShow(){document.querySelectorAll('.tour-hole,.tour-card').forEach(e=>e.remove());const s=TOUR[tourAt],el=document.querySelector(s.el);
+  if(!el){if(tourAt<TOUR.length-1){tourAt++;return tourShow()}return tourEnd()}
+  if(el.tagName==='DETAILS')el.open=true;
+  el.scrollIntoView({block:'center',behavior:'instant'});
+  const r=el.getBoundingClientRect(),pad=6,hole=document.createElement('div'),card=document.createElement('div');
+  hole.className='tour-hole';Object.assign(hole.style,{left:r.left-pad+'px',top:Math.max(r.top-pad,4)+'px',width:r.width+pad*2+'px',height:Math.min(r.height+pad*2,innerHeight-8)+'px'});
+  card.className='tour-card';card.setAttribute('role','dialog');card.setAttribute('aria-label',s.t);
+  card.innerHTML=`<h4>${s.t}</h4><p>${s.p}</p><div class="tour-nav"><button class="tour-skip" type="button">${tourAt?'Back':'Skip'}</button><span class="tour-dots">${TOUR.map((_,k)=>`<i class="${k===tourAt?'on':''}"></i>`).join('')}</span><button class="primary" type="button">${tourAt===TOUR.length-1?'Done':'Next'}</button></div>`;
+  document.body.append(hole,card);
+  const below=r.bottom+12+card.offsetHeight<innerHeight;
+  card.style.top=(below?r.bottom+12:Math.max(r.top-card.offsetHeight-12,12))+'px';card.style.left=Math.min(Math.max(r.left,16),innerWidth-card.offsetWidth-16)+'px';
+  card.querySelector('.primary').onclick=tourNext;card.querySelector('.primary').focus();
+  card.querySelector('.tour-skip').onclick=()=>{if(tourAt){tourAt--;tourShow()}else tourEnd()}}
+document.addEventListener('keydown',e=>{if(tourAt<0)return;if(e.key==='Escape')tourEnd();else if(e.key==='ArrowRight')tourNext();else if(e.key==='ArrowLeft'&&tourAt>0){tourAt--;tourShow()}});
+addEventListener('resize',()=>{if(tourAt>=0)tourShow()});
+$('tourBtn').onclick=tourStart;
+
 /* ---------- other pages ---------- */
-const SVC={income:['Income','Stability, ruin risk, safe instalment'],credit:['Credit','Loan score, counterfactuals, conformal sets'],rl:['Orchestrator','Chooses which helpers act'],agents:['Helpers','Six agents, plan and projection'],xai:['Explanations','Contribution of each helper'],feedback:['Feedback','Ratings and preference updates']};
+const SVC={income:['Income','Ruin risk, safe instalment, shock lab, pattern reader'],credit:['Credit','Loan score, counterfactuals, conformal sets'],rl:['Orchestrator','Chooses which helpers act'],agents:['Helpers','Six agents, plan and projection'],xai:['Explanations','Contribution of each helper'],feedback:['Feedback','Ratings and preference updates']};
 async function loadSvc(){try{const s=await (await fetch('/api/services')).json();$('svcgrid').innerHTML=Object.entries(SVC).map(([k,[t,d]])=>`<div class="svc"><b><span class="dot ${s[k]==='ok'?'ok':'bad'}"></span>${t}</b><span>${d}</span></div>`).join('')}catch(e){}}
+const PROC_NAME={ar1_gauss:'Smooth swings',ar1_t4:'Swings with jumps',regime:'Long good and bad spells',seasonal:'Seasonal',droughts:'Occasional zero months'};
+function attentionEval(a){const l=a.leave_one_process_out||{};
+  return `<h3>Pattern reader against the smooth model</h3><p>Error in the estimated chance of running out of cash (Brier score, lower is better) on ${a.n_test.toLocaleString()} held-out simulated households. The last column trains the reader without that income type at all.</p>
+  <table><thead><tr><th>Income type</th><th>Smooth model</th><th>Pattern reader</th><th>Reader, type unseen</th></tr></thead><tbody>${Object.entries(a.by_process).map(([k,v])=>`<tr><td>${PROC_NAME[k]||k}</td><td class="n">${v.brier_ar1.toFixed(3)}</td><td class="n">${v.brier_attention.toFixed(3)}</td><td class="n">${l[k]?l[k].brier_attention.toFixed(3):''}</td></tr>`).join('')}</tbody></table>
+  <p class="hint" style="margin-top:8px">The reader helps most where the smooth model fails: long spells and zero months. It is no better on seasonal income it has not seen.</p>`}
 let evalLoaded=false;
 async function loadEval(){if(evalLoaded)return;
   try{const d=await (await fetch('/api/results')).json();if(!d.rl)throw 0;evalLoaded=true;
@@ -639,6 +817,7 @@ async function loadEval(){if(evalLoaded)return;
       <p>We tested it on income patterns it was not fitted to. The share of cases where cash really ran out within a year, against the 10% target:</p>
       <table><thead><tr><th>Months of history</th><th>Plain model</th><th>With stricter margin</th><th>Worst-month rule</th></tr></thead><tbody>${[3,6,12,24].map(m=>`<tr><td>${m}</td><td class="n">${(A['ours|'+m].realised*100).toFixed(0)}%</td><td class="n">${(A['ours_cal|'+m].realised*100).toFixed(0)}%</td><td class="n">${(A['worst_month|'+m].realised*100).toFixed(0)}%</td></tr>`).join('')}</tbody></table>
       <p class="hint" style="margin-top:8px">Only with a year or more of records does the stricter margin reach the target on average. Income that swings between long good and bad spells stays well above it.</p>
+      ${d.attention?attentionEval(d.attention):''}
       <h3>Known limits</h3>
       <ul><li>The credit model does not carry over to the German Credit dataset (AUC ${d.credit.lodo.german.auc_orig[0].toFixed(2)}).</li>
       <li>The stability score ranks risk slightly worse than plain income variation. The ruin estimate drives decisions, not the score.</li>
@@ -653,6 +832,8 @@ async function loadEval(){if(evalLoaded)return;
     $('examples').innerHTML=keys.map(k=>`<button class="chip" type="button" data-k="${k}" aria-pressed="false">${esc(presets[k].label.split(' (')[0])}</button>`).join('');
     $('examples').querySelectorAll('.chip').forEach(b=>b.onclick=()=>{$('examples').querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-pressed',x===b));fill(presets[b.dataset.k])});
     $('examples').querySelector('.chip').click();
+    let seen=false;try{seen=!!localStorage.getItem('tour-v1')}catch(e){}
+    if(!seen)setTimeout(tourStart,400);
   }catch(e){months=[0,0,0];renderMonths()}
   try{const s=await (await fetch('/api/services')).json();const ok=Object.values(s).every(v=>v==='ok');
     $('status').innerHTML=`<span class="dot ${ok?'ok':'bad'}"></span><span>${ok?'all services running':'some services offline'}</span>`}catch(e){$('status').innerHTML='<span class="dot bad"></span><span>offline</span>'}

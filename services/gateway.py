@@ -142,9 +142,9 @@ async def pipeline(p: Profile, emit=None) -> dict:
         step("income", call("income", "/analyse", dict(
             income_history=hist, monthly_expenses=p.monthly_expenses, existing_emi=p.existing_emi,
             new_emi=new_emi, buffer=buffer, missed_payments=p.missed_payments)),
-            lambda r: (f"Read {r['stability']['n']} months of income and simulated 4,000 possible next years. "
-                       f"Month-to-month swing {r['stability']['cv'] * 100:.0f}%, "
-                       f"stability {r['stability']['isi']:.0f}/100.")),
+            lambda r: (f"Simulated 4,000 possible years from {r['stability']['n']} months of income. "
+                       f"Swing {r['stability']['cv'] * 100:.0f}%, stability {r['stability']['isi']:.0f}/100, "
+                       f"pattern reader ruin estimate {r['pattern']['ruin_probability'] * 100:.0f}%.")),
         step("credit", call("credit", "/assess", dict(profile=prof, new_emi=new_emi)),
              lambda r: (f"Scored the loan with a model trained on 181,000 public borrower records. "
                         f"Estimated default risk {r['pd'] * 100:.1f}%, band: {r['decision']}.")),
@@ -174,10 +174,10 @@ async def pipeline(p: Profile, emit=None) -> dict:
         headline = f"{HEADLINES[cr['decision']]} {DISCLAIMER}"
     else:
         headline = f"No new loan entered; the plan focuses on cash-flow resilience. {DISCLAIMER}"
-    orchestrator = {k: v for k, v in rl.items() if k != "q"}
+    orchestrator = {k: v for k, v in rl.items() if k not in ("q", "saliency")}
     return dict(headline=headline, new_emi=new_emi, total_repayment=new_emi * p.loan.months if new_emi else 0.0,
                 mean_income=mean, bucket=bucket, income=inc, credit=cr, orchestrator=orchestrator, plan=plan,
-                explain=xai, scale=scale, total_ms=round((time.perf_counter() - t0) * 1000, 1))
+                explain=dict(xai, saliency=rl["saliency"]), scale=scale, total_ms=round((time.perf_counter() - t0) * 1000, 1))
 
 
 # ---------------------------------------------------------------------------
@@ -216,6 +216,21 @@ async def advise_stream(p: Profile):
                              headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
 
 
+class Shock(BaseModel):
+    income_history: List[float] = Field(..., min_length=2, max_length=120)
+    monthly_expenses: float = Field(..., gt=0)
+    new_emi: float = Field(0, ge=0)
+    buffer: float = Field(0, ge=0)
+    drop: float = Field(0.3, ge=0, le=1)
+    months: int = Field(3, ge=1, le=12)
+    start: int = Field(1, ge=1, le=12)
+
+
+@app.post("/api/shock")
+async def shock(s: Shock):
+    return await call("income", "/shock", s.model_dump())
+
+
 class Rating(BaseModel):
     bucket: str
     mask: int = Field(..., ge=1, le=63)
@@ -240,7 +255,7 @@ async def services():
 @app.get("/api/results")
 def results():
     out = {}
-    for k in ("rl", "income", "credit", "xai", "system"):
+    for k in ("rl", "income", "credit", "xai", "system", "attention"):
         f = RESULTS / f"{k}.json"
         if f.exists():
             out[k] = json.loads(f.read_text())
