@@ -18,7 +18,7 @@ from pathlib import Path
 
 import numpy as np
 
-from .data import FEATS
+from .features import FEATS
 from .treemodel import TreeModel
 
 ROOT = Path(__file__).resolve().parent.parent

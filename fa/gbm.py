@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from .data import FEATS
+from .features import FEATS
 
 PARAMS = dict(objective="binary", learning_rate=0.05, num_leaves=31, min_data_in_leaf=200,
               lambda_l2=5.0, bagging_fraction=0.8, bagging_freq=1, feature_fraction=0.9,

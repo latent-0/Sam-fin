@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 
 from fa import credit as C, gbm as G, income as I
-from fa.data import FEATS
+from fa.features import FEATS
 from fa.treemodel import TreeModel
 
 ROOT = Path(__file__).resolve().parent.parent

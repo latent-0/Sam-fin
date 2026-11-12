@@ -21,13 +21,12 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from .features import CORE, FEATS, VOL  # noqa: F401
+
 ROOT = Path(__file__).resolve().parent.parent
 RAW = ROOT / "data" / "raw"
 
 OPENML_IDS = {"gmsc": 46929, "taiwan": 42477, "german": 31}
-CORE = ["age", "debt_ratio", "utilization", "d30", "d60", "d90", "open_lines", "dependents"]
-VOL = ["income_cv", "semi_dev_ratio", "history_months", "buffer_months", "emi_ratio", "gig", "expense_ratio"]
-FEATS = CORE + VOL
 
 PASS_THROUGH = 0.6          # P(default | ruin) for borrowers who were not already defaulters
 
