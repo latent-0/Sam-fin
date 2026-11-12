@@ -799,6 +799,19 @@ function attentionEval(a){const l=a.leave_one_process_out||{};
   return `<h3>Pattern reader against the smooth model</h3><p>Error in the estimated chance of running out of cash (Brier score, lower is better) on ${a.n_test.toLocaleString()} held-out simulated households. The last column trains the reader without that income type at all.</p>
   <table><thead><tr><th>Income type</th><th>Smooth model</th><th>Pattern reader</th><th>Reader, type unseen</th></tr></thead><tbody>${Object.entries(a.by_process).map(([k,v])=>`<tr><td>${PROC_NAME[k]||k}</td><td class="n">${v.brier_ar1.toFixed(3)}</td><td class="n">${v.brier_attention.toFixed(3)}</td><td class="n">${l[k]?l[k].brier_attention.toFixed(3):''}</td></tr>`).join('')}</tbody></table>
   <p class="hint" style="margin-top:8px">The reader helps most where the smooth model fails: long spells and zero months. It is no better on seasonal income it has not seen.</p>`}
+const ALT_NAME={'cash first':'Cash first: shortfall and reserve weighted double','growth first':'Growth first: reserve and goal weighted half','net worth and shortfall only':'Only net worth and shortfall, no shaping terms','all weights equal':'Every weight set to 1'};
+function rewardEval(r){const o=r.outcomes,rw=r.reweight,f=(v,d=2)=>Math.abs(v)<0.5*10**-d?(0).toFixed(d):(v>0?'+':'')+v.toFixed(d);
+  const row=(k,l,d=2)=>`<tr><td>${l}</td><td class="n">${o[k].rule.toFixed(d)}</td><td class="n">${o[k].dqn.toFixed(d)}</td><td class="n">${f(o[k].mean_diff,d)}</td></tr>`;
+  return `<h3>Does the result depend on our reward?</h3>
+  <p>The reward is a design choice, so we checked the comparison three other ways.</p>
+  <p><b>1. Plain outcomes, no reward involved.</b> Averages over 2,400 unseen households, in multiples of monthly income.</p>
+  <table><thead><tr><th>Outcome after 12 months</th><th>Rules</th><th>Learned selector</th><th>Difference</th></tr></thead><tbody>
+  ${row('net_worth_change','Net worth change')}${row('debt_paid','Debt paid down')}${row('reserve_coverage_end','Reserve, share of target')}${row('goal_progress','Goal progress')}${row('shortfall_amount','Cash shortfall',3)}</tbody></table>
+  <p class="hint" style="margin-top:8px">More net worth, more debt paid and a fuller reserve, with no more shortfall. It does make less goal progress. In ${(r.dominance.dqn_dominates*100).toFixed(0)}% of households it is at least as good on both net worth and shortfall and better on one; the rules win that way in ${(r.dominance.rule_dominates*100).toFixed(0)}%.</p>
+  <p><b>2. Different weights, same decisions.</b> Re-scoring the same runs under ${rw.n_draws.toLocaleString()} random weightings, each weight scaled anywhere from a quarter to four times: the learned selector still scores higher in <b>${(rw.share_dqn_better*100).toFixed(0)}%</b> of them. It loses when goal saving is weighted four times higher.</p>
+  <p><b>3. Retrained under a different reward.</b> A new selector trained on each alternative reward, against the same rules:</p>
+  <table><thead><tr><th>Reward</th><th>Rules</th><th>Learned selector</th><th>Difference [95% CI]</th></tr></thead><tbody>${Object.entries(r.retrained).map(([k,v])=>`<tr><td>${ALT_NAME[k]||k}</td><td class="n">${v.rule.toFixed(2)}</td><td class="n">${v.dqn.toFixed(2)}</td><td class="n">${f(v.mean_diff)} [${f(v.ci[0])}, ${f(v.ci[1])}]</td></tr>`).join('')}</tbody></table>
+  <p class="hint" style="margin-top:8px">The selector beats the rules under every reward we tried, because it learns from whatever the reward asks for while the rules stay fixed. Part of its edge under our reward comes from calling fewer helpers, which our reward charges for.</p>`}
 let evalLoaded=false;
 async function loadEval(){if(evalLoaded)return;
   try{const d=await (await fetch('/api/results')).json();if(!d.rl)throw 0;evalLoaded=true;
@@ -817,6 +830,7 @@ async function loadEval(){if(evalLoaded)return;
       <p>We tested it on income patterns it was not fitted to. The share of cases where cash really ran out within a year, against the 10% target:</p>
       <table><thead><tr><th>Months of history</th><th>Plain model</th><th>With stricter margin</th><th>Worst-month rule</th></tr></thead><tbody>${[3,6,12,24].map(m=>`<tr><td>${m}</td><td class="n">${(A['ours|'+m].realised*100).toFixed(0)}%</td><td class="n">${(A['ours_cal|'+m].realised*100).toFixed(0)}%</td><td class="n">${(A['worst_month|'+m].realised*100).toFixed(0)}%</td></tr>`).join('')}</tbody></table>
       <p class="hint" style="margin-top:8px">Only with a year or more of records does the stricter margin reach the target on average. Income that swings between long good and bad spells stays well above it.</p>
+      ${d.reward?rewardEval(d.reward):''}
       ${d.attention?attentionEval(d.attention):''}
       <h3>Known limits</h3>
       <ul><li>The credit model does not carry over to the German Credit dataset (AUC ${d.credit.lodo.german.auc_orig[0].toFixed(2)}).</li>

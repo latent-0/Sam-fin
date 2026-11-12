@@ -25,6 +25,9 @@ N_AGENTS = 6
 N_ACTIONS = 63                      # masks 1..63
 OBS_DIM = 14
 CALL_COST = 0.02
+# reward weights (paper eq. 8); the net-worth change has weight 1 and sets the scale
+REWARD_WEIGHTS = dict(resilience=1.5, goal=0.6, shortfall=3.0, comfort=0.4, unsuitable=0.8, call=CALL_COST,
+                      debt_bonus=3.0)
 PERSONAS = ["gig", "salaried_loan", "student", "near_retiree"]
 PERSONA_LABELS = ["Gig worker", "Salaried + loans", "Student / graduate", "Near retiree"]
 PERSONA_P = [0.30, 0.35, 0.20, 0.15]
@@ -130,7 +133,8 @@ def reserve_target(c) -> np.ndarray:
 # environment
 # ---------------------------------------------------------------------------
 class Env:
-    def __init__(self, P: dict, seed: int = 0, stress: dict | None = None):
+    def __init__(self, P: dict, seed: int = 0, stress: dict | None = None, weights: dict | None = None):
+        self.w = dict(REWARD_WEIGHTS, **(weights or {}))
         self.P = {k: np.asarray(v, float).copy() for k, v in P.items()}
         st = stress or {}
         if st:
@@ -256,11 +260,13 @@ class Env:
         d_nw = self.net_worth() - nw0
         d_cov = np.minimum(self.coverage(), 1.0) - cov0
         k = b.sum(axis=1)
-        r = (d_nw + 1.5 * (1 + 3 * c) * d_cov + 0.6 * a_g - 3 * short - 0.4 * comfort - 0.8 * unsuitable
-             - CALL_COST * k + 3 * a_d * np.maximum(P["rd"] - 0.05, 0))
+        terms = dict(net_worth=d_nw, resilience=(1 + 3 * c) * d_cov, goal=a_g, shortfall=-short, comfort=-comfort,
+                     unsuitable=-unsuitable, call=-k, debt_bonus=a_d * np.maximum(P["rd"] - 0.05, 0))
+        w = self.w
+        r = terms["net_worth"] + sum(w[name] * v for name, v in terms.items() if name != "net_worth")
         self.t += 1
         info = dict(
-            income=X, shortfall=short > 1e-12, short_amt=short, calls=k,
+            terms=terms, income=X, shortfall=short > 1e-12, short_amt=short, calls=k,
             alloc=dict(budget=cut, debt=a_d, emergency=a_e, goal=a_g, risk=premium, investment=a_i),
         )
         return r, self.obs(), info

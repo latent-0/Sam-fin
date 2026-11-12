@@ -175,6 +175,7 @@ python scripts/paper/run_all.py        # all experiments + figures
 | RQ3 orchestrator vs selectors, personas, oracle, distribution shift | `exp_rl.py` | `rl.json`, `rl_returns.npz` |
 | RQ4 faithfulness of agent-Shapley explanations | `exp_xai.py` | `xai.json` |
 | RQ5/RQ6 counterfactuals, feedback study, latency | `exp_system.py` | `system.json` |
+| Does "DQN beats the rule" depend on the reward weights? | `exp_reward.py` | `reward.json` |
 | Pattern reader vs AR(1), by income type | `scripts/train_attention.py` | `attention.json` |
 | Figures | `make_figures.py` | `paper/figures/*.png` |
 

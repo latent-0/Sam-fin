@@ -107,7 +107,7 @@ def guided_explore(env: E.Env, rng: np.random.Generator, p_guide: float = 0.75) 
 
 def train(P: dict, ticks: int = 20000, seed: int = 0, guided: bool = True, n_env: int = 64,
           batch: int = 256, gamma: float = 0.9, lr0: float = 5e-4, buffer: int = 120_000,
-          target_every: int = 100, updates_per_tick: int = 2, log_every: int = 0):
+          target_every: int = 100, updates_per_tick: int = 2, log_every: int = 0, weights: dict | None = None):
     """Train on the household population P (dict of arrays). Returns (net, curve)."""
     rng = np.random.default_rng(seed)
     net = QNet(rng)
@@ -124,7 +124,7 @@ def train(P: dict, ticks: int = 20000, seed: int = 0, guided: bool = True, n_env
 
     def new_env():
         idx = rng.integers(0, N, n_env)
-        return E.Env({k: v[idx] for k, v in P.items()}, seed=int(rng.integers(1 << 31)))
+        return E.Env({k: v[idx] for k, v in P.items()}, seed=int(rng.integers(1 << 31)), weights=weights)
 
     env = new_env()
     s = env.obs()
@@ -185,9 +185,15 @@ def policy(net: QNet, bias: np.ndarray | None = None):
     return act
 
 
-def evaluate(P: dict, act, seed: int = 0, stress: dict | None = None) -> dict:
-    """Run one 12-month episode for every household with common random numbers."""
-    env = E.Env(P, seed=seed, stress=stress)
+def evaluate(P: dict, act, seed: int = 0, stress: dict | None = None, weights: dict | None = None) -> dict:
+    """Run one 12-month episode for every household with common random numbers.
+
+    Also returns the 12-month sum of each reward term and plain outcomes that do not use the reward.
+    """
+    env = E.Env(P, seed=seed, stress=stress, weights=weights)
+    nw0, cov0 = env.net_worth().copy(), np.minimum(env.coverage(), 1.0)
+    debt0, goal0 = env.S["D"].copy(), env.S["Gs"].copy()
+    terms = None
     rng = np.random.default_rng(10_000 + seed)
     ret = np.zeros(env.n)
     short = np.zeros(env.n)
@@ -201,7 +207,21 @@ def evaluate(P: dict, act, seed: int = 0, stress: dict | None = None) -> dict:
         short += info["shortfall"]
         calls += info["calls"]
         usage += E.mask_to_bits(m)
-    return dict(ret=ret, short=short / E.HORIZON, calls=calls, usage=usage / E.HORIZON)
+        terms = {k: v.copy() for k, v in info["terms"].items()} if terms is None else \
+            {k: terms[k] + v for k, v in info["terms"].items()}
+    S, P = env.S, env.P
+    goal_need = np.maximum(P["goal"] - goal0, 1e-9)
+    outcomes = dict(
+        net_worth_change=env.net_worth() - nw0,
+        reserve_coverage_end=np.minimum(env.coverage(), 1.0),
+        reserve_coverage_gain=np.minimum(env.coverage(), 1.0) - cov0,
+        goal_progress=np.clip((S["Gs"] - goal0) / goal_need, 0, 1),
+        debt_paid=debt0 - S["D"],
+        shortfall_amount=-terms["shortfall"],
+        any_shortfall=(short > 0).astype(float),
+    )
+    return dict(ret=ret, short=short / E.HORIZON, calls=calls, usage=usage / E.HORIZON, terms=terms,
+                outcomes=outcomes)
 
 
 def save(net: QNet, path: Path) -> None:

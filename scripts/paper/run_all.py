@@ -14,7 +14,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 
-STEPS = ["exp_credit.py", "exp_income.py", "exp_rl.py", "exp_xai.py", "exp_system.py", "make_figures.py"]
+STEPS = ["exp_credit.py", "exp_income.py", "exp_rl.py", "exp_xai.py", "exp_system.py", "exp_reward.py", "make_figures.py"]
 
 if __name__ == "__main__":
     t0 = time.time()

@@ -255,7 +255,7 @@ async def services():
 @app.get("/api/results")
 def results():
     out = {}
-    for k in ("rl", "income", "credit", "xai", "system", "attention"):
+    for k in ("rl", "income", "credit", "xai", "system", "attention", "reward"):
         f = RESULTS / f"{k}.json"
         if f.exists():
             out[k] = json.loads(f.read_text())

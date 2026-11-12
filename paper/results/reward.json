@@ -1,0 +1,217 @@
+{
+ "weights": {
+  "resilience": 1.5,
+  "goal": 0.6,
+  "shortfall": 3.0,
+  "comfort": 0.4,
+  "unsuitable": 0.8,
+  "call": 0.02,
+  "debt_bonus": 3.0
+ },
+ "outcomes": {
+  "net_worth_change": {
+   "rule": 4.482791145392464,
+   "dqn": 4.563616071143415,
+   "mean_diff": 0.08082492575095218,
+   "ci": [
+    0.07602254178575292,
+    0.08571925450757169
+   ],
+   "wilcoxon_p": 2.346795766462992e-180
+  },
+  "reserve_coverage_end": {
+   "rule": 0.7820452396951336,
+   "dqn": 0.8040092063675096,
+   "mean_diff": 0.02196396667237597,
+   "ci": [
+    0.01500471935357421,
+    0.028490217203025556
+   ],
+   "wilcoxon_p": 1.52176177125105e-17
+  },
+  "reserve_coverage_gain": {
+   "rule": 0.3505418720894417,
+   "dqn": 0.37250583876181775,
+   "mean_diff": 0.02196396667237597,
+   "ci": [
+    0.015004719353574203,
+    0.028490217203025553
+   ],
+   "wilcoxon_p": 1.52176177125105e-17
+  },
+  "goal_progress": {
+   "rule": 0.2311668175871661,
+   "dqn": 0.19328012040709808,
+   "mean_diff": -0.03788669718006801,
+   "ci": [
+    -0.042760394675357895,
+    -0.03284737244227092
+   ],
+   "wilcoxon_p": 8.14045388481063e-66
+  },
+  "debt_paid": {
+   "rule": 1.1718212694041348,
+   "dqn": 1.300018668673093,
+   "mean_diff": 0.1281973992689582,
+   "ci": [
+    0.0894640839037346,
+    0.16853431006656283
+   ],
+   "wilcoxon_p": 1.7158525500368728e-06
+  },
+  "shortfall_amount": {
+   "rule": 0.0032453747478820784,
+   "dqn": 0.0028963918249920247,
+   "mean_diff": -0.0003489829228900535,
+   "ci": [
+    -0.0009239856727732047,
+    0.00016613105476718073
+   ],
+   "wilcoxon_p": 0.9060993177142914
+  },
+  "any_shortfall": {
+   "rule": 0.015416666666666667,
+   "dqn": 0.017583333333333336,
+   "mean_diff": 0.002166666666666667,
+   "ci": [
+    1.8503717077085944e-19,
+    0.004333333333333334
+   ],
+   "wilcoxon_p": 0.01337729566586493
+  }
+ },
+ "dominance": {
+  "dqn_dominates": 0.7304166666666667,
+  "rule_dominates": 0.22875,
+  "trade_off": 0.04083333333333328
+ },
+ "reweight": {
+  "n_draws": 2000,
+  "range": "each weight x [1/4, 4], log-uniform",
+  "share_dqn_better": 0.929,
+  "diff_median": 0.2923249362566471,
+  "diff_p5": -0.037470590880573515,
+  "diff_p95": 0.7725291551824182,
+  "one_at_a_time": {
+   "resilience removed": 0.1792883318810885,
+   "resilience x4": 0.5273884567441858,
+   "goal removed": 0.37301641198062274,
+   "goal x4": -0.05379578355441872,
+   "shortfall removed": 0.26526641432819265,
+   "shortfall x4": 0.26945420940287335,
+   "comfort removed": 0.279061097808313,
+   "comfort x4": 0.2280701589625096,
+   "unsuitable removed": 0.2677025316764601,
+   "unsuitable x4": 0.2621458573580684,
+   "call removed": 0.07959002976352991,
+   "call x4": 0.8264833630968629,
+   "debt_bonus removed": 0.23478028689392172,
+   "debt_bonus x4": 0.360912591705687
+  },
+  "gain_by_term": {
+   "net_worth": 0.08082492575095218,
+   "resilience": 0.08702503121577457,
+   "goal": -0.10670304888375999,
+   "shortfall": 0.0010469487686701605,
+   "comfort": -0.012747734711450985,
+   "unsuitable": -0.0013891685795979765,
+   "call": 0.18672333333333332,
+   "debt_bonus": 0.03153307620294129
+  }
+ },
+ "retrained": {
+  "cash first": {
+   "weights": {
+    "resilience": 3.0,
+    "goal": 0.6,
+    "shortfall": 6.0,
+    "comfort": 0.4,
+    "unsuitable": 0.8,
+    "call": 0.04,
+    "debt_bonus": 3.0
+   },
+   "rule": 5.986404841419851,
+   "dqn": 7.09953798841788,
+   "mean_diff": 1.1131331469980281,
+   "ci": [
+    1.071859654222775,
+    1.153955812368047
+   ],
+   "share_dqn_better": 0.8483333333333334,
+   "net_worth_change_diff": -0.015565190560137812,
+   "shortfall_amount_diff": -0.00020374582671274434
+  },
+  "growth first": {
+   "weights": {
+    "resilience": 0.5,
+    "goal": 0.3,
+    "shortfall": 1.5,
+    "comfort": 0.4,
+    "unsuitable": 0.8,
+    "call": 0.02,
+    "debt_bonus": 1.0
+   },
+   "rule": 4.604550820601702,
+   "dqn": 4.810839049692406,
+   "mean_diff": 0.20628822909070368,
+   "ci": [
+    0.1925622758053484,
+    0.22052946153156203
+   ],
+   "share_dqn_better": 0.7216666666666667,
+   "net_worth_change_diff": 0.0933367735650323,
+   "shortfall_amount_diff": 0.0007703505090672403
+  },
+  "net worth and shortfall only": {
+   "weights": {
+    "resilience": 0.0,
+    "goal": 0.0,
+    "shortfall": 3.0,
+    "comfort": 0.0,
+    "unsuitable": 0.0,
+    "call": 0.02,
+    "debt_bonus": 0.0
+   },
+   "rule": 3.798278354482151,
+   "dqn": 4.241728706314536,
+   "mean_diff": 0.4434503518323847,
+   "ci": [
+    0.43341484210023246,
+    0.45386015291477366
+   ],
+   "share_dqn_better": 0.9575,
+   "net_worth_change_diff": 0.1675090864052101,
+   "shortfall_amount_diff": -0.0001609773646137043
+  },
+  "all weights equal": {
+   "weights": {
+    "resilience": 1.0,
+    "goal": 1.0,
+    "shortfall": 1.0,
+    "comfort": 1.0,
+    "unsuitable": 1.0,
+    "call": 0.02,
+    "debt_bonus": 1.0
+   },
+   "rule": 5.822546265127674,
+   "dqn": 6.629852016527442,
+   "mean_diff": 0.807305751399769,
+   "ci": [
+    0.7720647073935697,
+    0.8442776591294876
+   ],
+   "share_dqn_better": 0.7795833333333333,
+   "net_worth_change_diff": 0.01713966572877821,
+   "shortfall_amount_diff": -0.00040245974947477134
+  }
+ },
+ "n_test": 2400,
+ "eval_seeds": [
+  0,
+  1,
+  2,
+  3,
+  4
+ ],
+ "ticks": 20000
+}
